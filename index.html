@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minders · Stakeholder Map</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg:#0e0f11;--surface:#16181c;--surface2:#1e2026;
+  --border:#2a2d35;--border2:#363a45;
+  --text:#f0f1f3;--text2:#8b909e;--text3:#555b6a;
+  --mint:#00e5a0;--red:#ff4d6d;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.login-box{width:360px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px 36px;}
+.login-logo{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--mint);text-transform:uppercase;margin-bottom:32px;display:flex;align-items:center;gap:8px;}
+.login-logo::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--mint);}
+.login-box h1{font-size:20px;font-weight:600;margin-bottom:6px;}
+.login-box p{font-size:12px;color:var(--text2);margin-bottom:28px;}
+.field-group{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+.field-group input{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;width:100%;}
+.field-group input::placeholder{color:var(--text3);}
+.field-group input:focus{border-color:var(--mint);}
+.btn-primary{width:100%;background:var(--mint);color:#0a0b0d;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;letter-spacing:.02em;}
+.btn-primary:hover{opacity:.88;}
+.login-error{font-size:11px;color:var(--red);margin-top:10px;min-height:16px;text-align:center;}
+.login-hint{margin-top:20px;font-size:11px;color:var(--text3);}
+
+/* APP */
+#app{display:none;min-height:100vh;flex-direction:column;}
+#app.visible{display:flex;}
+
+/* TOPBAR */
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50;}
+.topbar-logo{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;flex-shrink:0;}
+.topbar-divider{width:1px;height:20px;background:var(--border2);}
+.account-name-display{font-size:13px;font-weight:600;color:var(--text);flex:1;}
+.account-name-display span{color:var(--text2);font-weight:400;font-size:12px;margin-left:6px;}
+.topbar-actions{display:flex;align-items:center;gap:8px;}
+.btn-ghost{background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;white-space:nowrap;}
+.btn-ghost:hover{border-color:var(--mint);color:var(--mint);}
+.btn-danger-ghost{background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--text3);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;}
+.btn-danger-ghost:hover{border-color:var(--red);color:var(--red);}
+
+/* CANVAS */
+.canvas{flex:1;overflow:auto;padding:40px 40px 100px;display:flex;flex-direction:column;align-items:center;}
+
+/* META PILLS */
+.account-meta{width:100%;max-width:1100px;display:flex;align-items:center;gap:10px;margin-bottom:32px;flex-wrap:wrap;}
+.meta-pill{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .12s;}
+.meta-pill:hover{border-color:var(--border2);color:var(--text);}
+.meta-pill.set{color:var(--text);border-color:var(--border2);}
+
+/* LEGEND */
+.legend{width:100%;max-width:1100px;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);}
+.legend-dot{width:8px;height:8px;border-radius:2px;}
+
+/* IMPORT */
+.import-panel{width:100%;max-width:1100px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:28px;}
+.import-panel summary{font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:6px;}
+.import-panel summary::-webkit-details-marker{display:none;}
+.import-panel summary::before{content:'▶';font-size:9px;color:var(--text3);transition:transform .15s;}
+.import-panel[open] summary::before{transform:rotate(90deg);}
+.import-panel textarea{width:100%;margin-top:14px;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:11px;font-family:'Space Mono',monospace;color:var(--mint);resize:vertical;min-height:90px;outline:none;}
+.import-actions{display:flex;gap:8px;margin-top:10px;}
+
+/* TREE */
+#org-tree{width:100%;max-width:1100px;}
+.tree-root{display:flex;flex-direction:column;align-items:center;}
+.tree-node{display:flex;flex-direction:column;align-items:center;position:relative;}
+.v-line{width:2px;flex-shrink:0;background:var(--border2);}
+.children-wrap{display:flex;flex-direction:column;align-items:center;}
+.children-row{display:flex;gap:12px;align-items:flex-start;position:relative;}
+.child-col{display:flex;flex-direction:column;align-items:center;}
+
+/* CARD */
+.card{
+  width:192px;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:13px 12px 10px;cursor:grab;
+  transition:border-color .15s,box-shadow .15s,opacity .15s;
+  position:relative;flex-shrink:0;user-select:none;
+}
+.card:hover{border-color:var(--border2);box-shadow:0 0 0 3px rgba(255,255,255,.03);}
+.card.dragging{opacity:.35;cursor:grabbing;}
+.card.drag-over-above{border-top:2px solid var(--mint);}
+.card.drag-over-below{border-bottom:2px solid var(--mint);}
+.card.drag-over-side{border:2px dashed var(--mint);}
+
+.card-top{display:flex;align-items:flex-start;gap:9px;margin-bottom:9px;}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;font-family:'Space Mono',monospace;text-decoration:none;}
+.avatar:hover{border-color:var(--mint);}
+.card-info{flex:1;min-width:0;}
+.card-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}
+.card-role{font-size:10px;color:var(--text2);margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-labels{display:flex;flex-wrap:wrap;gap:3px;margin-top:1px;}
+.label-tag{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 5px;border-radius:4px;line-height:1.4;}
+.card-note{font-size:10px;color:var(--text3);margin-top:6px;line-height:1.4;font-style:italic;}
+.card-linkedin{display:block;margin-top:6px;font-size:9px;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .12s;}
+.card-linkedin:hover{color:var(--mint);}
+.card-linkedin svg{flex-shrink:0;}
+
+.add-child-btn{margin-top:0;width:32px;height:22px;border:1px dashed var(--border2);border-radius:6px;background:none;color:var(--text3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;}
+.add-child-btn:hover{border-color:var(--mint);color:var(--mint);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-state h2{font-size:16px;font-weight:600;margin-bottom:8px;}
+.empty-state p{font-size:13px;color:var(--text2);line-height:1.6;max-width:320px;margin:0 auto 24px;}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:26px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:15px;font-weight:600;margin-bottom:20px;}
+.modal-field{margin-bottom:13px;}
+.modal-field label{display:block;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:5px;}
+.modal-field input,.modal-field select{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color .12s;}
+.modal-field input::placeholder{color:var(--text3);}
+.modal-field input:focus,.modal-field select:focus{border-color:var(--mint);}
+.modal-field select option{background:var(--surface2);}
+.label-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.label-toggle{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:500;color:var(--text2);transition:all .12s;user-select:none;background:var(--bg);}
+.label-toggle input{display:none;}
+.label-toggle .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.label-toggle.active{color:var(--text);border-color:transparent;}
+.modal-actions{display:flex;gap:8px;margin-top:20px;}
+.btn-modal-save{flex:1;background:var(--mint);color:#0a0b0d;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-modal-cancel{flex:1;background:var(--surface2);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-modal-delete{background:none;border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:16px;cursor:pointer;color:var(--text3);transition:all .12s;}
+.btn-modal-delete:hover{border-color:var(--red);color:var(--red);}
+
+/* linkedin input icon */
+.input-with-icon{position:relative;}
+.input-with-icon input{padding-left:32px;}
+.input-with-icon .icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.4;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 18px;font-size:12px;font-weight:500;color:var(--text);z-index:999;transition:transform .25s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* DRAG HINT */
+.drag-hint{font-size:10px;color:var(--text3);text-align:center;margin-top:8px;letter-spacing:.04em;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Minders</div>
+    <h1>Stakeholder Map</h1>
+    <p>Acesso restrito ao time Minders.</p>
+    <div class="field-group">
+      <input type="email" id="login-email" placeholder="você@minders.io" autocomplete="email">
+      <input type="password" id="login-password" placeholder="Senha master" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+  <div class="login-hint">Só emails @minders.io têm acesso.</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">Minders</div>
+    <div class="topbar-divider"></div>
+    <div class="account-name-display" id="topbar-account-name">Stakeholder Map</div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" onclick="openAccountModal()">⚙ Conta</button>
+      <button class="btn-ghost" onclick="openPersonModal(null,null)">+ Pessoa</button>
+      <button class="btn-ghost" onclick="exportJSON()">↓ JSON</button>
+      <button class="btn-danger-ghost" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="canvas">
+    <div class="account-meta" id="account-meta-bar"></div>
+    <div class="legend" id="legend"></div>
+
+    <details class="import-panel" id="import-panel">
+      <summary>↑ Colar JSON gerado pelo Claude</summary>
+      <textarea id="import-textarea" placeholder='Cole aqui o JSON e clique Importar...'></textarea>
+      <div class="import-actions">
+        <button class="btn-ghost" onclick="doImport()">Importar</button>
+        <button class="btn-ghost" onclick="document.getElementById('import-textarea').value=''">Limpar</button>
+      </div>
+    </details>
+
+    <div id="org-tree"></div>
+    <div class="drag-hint" id="drag-hint"></div>
+  </div>
+</div>
+
+<!-- MODAL PESSOA -->
+<div class="modal-bg" id="person-modal">
+  <div class="modal">
+    <h2 id="modal-title">Adicionar pessoa</h2>
+    <div class="modal-field">
+      <label>Nome</label>
+      <input id="m-name" type="text" placeholder="Nome completo">
+    </div>
+    <div class="modal-field">
+      <label>Cargo</label>
+      <input id="m-role" type="text" placeholder="ex: CFO, Head of Growth">
+    </div>
+    <div class="modal-field">
+      <label>LinkedIn URL</label>
+      <div class="input-with-icon">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        <input id="m-linkedin" type="url" placeholder="https://linkedin.com/in/...">
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Iniciais (avatar)</label>
+      <input id="m-initials" type="text" maxlength="3" placeholder="ex: VS">
+    </div>
+    <div class="modal-field">
+      <label>Nota interna</label>
+      <input id="m-note" type="text" placeholder="ex: Aliado do Victor, acesso direto">
+    </div>
+    <div class="modal-field">
+      <label>Papel na compra</label>
+      <div class="label-grid" id="label-grid"></div>
+    </div>
+    <div class="modal-field">
+      <label>Reporta para</label>
+      <select id="m-parent">
+        <option value="">— topo da hierarquia —</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-delete" id="modal-delete-btn" onclick="deletePerson()" title="Remover">🗑</button>
+      <button class="btn-modal-cancel" onclick="closePersonModal()">Cancelar</button>
+      <button class="btn-modal-save" onclick="savePerson()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONTA -->
+<div class="modal-bg" id="account-modal">
+  <div class="modal">
+    <h2>Informações da conta</h2>
+    <div class="modal-field"><label>Nome da empresa</label><input id="am-name" type="text" placeholder="ex: Jeitto, Caju, BPBA"></div>
+    <div class="modal-field"><label>Segmento / Vertical</label><input id="am-segment" type="text" placeholder="ex: Fintech, Varejo, SaaS"></div>
+    <div class="modal-field"><label>Território</label>
+      <select id="am-territory"><option value="">—</option><option>Brazil</option><option>North LATAM</option><option>South LATAM</option></select>
+    </div>
+    <div class="modal-field"><label>BDR responsável</label><input id="am-bdr" type="text" placeholder="ex: Mari, Nacho, Karli"></div>
+    <div class="modal-field"><label>Stage atual</label>
+      <select id="am-stage"><option value="">—</option><option>Prospecting</option><option>Attempting to Contact</option><option>Connected</option><option>Qualified (S0)</option></select>
+    </div>
+    <div class="modal-field"><label>Produto alvo</label>
+      <select id="am-product"><option value="">—</option><option>Amplitude</option><option>Braze</option><option>Amplitude + Braze</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeAccountModal()">Cancelar</button>
+      <button class="btn-modal-save" onclick="saveAccount()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MASTER_PASSWORD = 'minders2026';
+const ALLOWED_DOMAIN  = 'minders.io';
+const STORAGE_KEY     = 'minders_stakeholder_v2';
+
+const LABELS = [
+  {id:'champion',  label:'Champion',      color:'#00e5a0'},
+  {id:'blocker',   label:'Blocker',       color:'#ff4d6d'},
+  {id:'eco_buyer', label:'Economic Buyer',color:'#7c6ef7'},
+  {id:'budget',    label:'Budget Owner',  color:'#f59e0b'},
+  {id:'decision',  label:'Decision Maker',color:'#3b9eff'},
+  {id:'influencer',label:'Influencer',    color:'#f472b6'},
+  {id:'user',      label:'User',          color:'#34d399'},
+  {id:'coach',     label:'Coach',         color:'#fb923c'},
+];
+
+let state = { account:{name:'',segment:'',territory:'',bdr:'',stage:'',product:''}, people:[] };
+let editingPersonId = null;
+
+// ── DRAG STATE ───────────────────────────────────────
+let dragId       = null;
+let dragOverId   = null;
+let dragZone     = null; // 'above' | 'below' | 'side'
+
+// ── PERSIST ──────────────────────────────────────────
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function load(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){ try{ state = JSON.parse(raw); }catch(e){} }
+}
+
+// ── LOGIN ────────────────────────────────────────────
+function doLogin(){
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  if(!email.endsWith('@'+ALLOWED_DOMAIN)){ errEl.textContent='Só emails @minders.io têm acesso.'; return; }
+  if(pass !== MASTER_PASSWORD){ errEl.textContent='Senha incorreta.'; return; }
+  sessionStorage.setItem('minders_auth','1');
+  errEl.textContent='';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  load(); renderAll();
+}
+function doLogout(){
+  sessionStorage.removeItem('minders_auth');
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-password').value='';
+}
+document.getElementById('login-password').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+if(sessionStorage.getItem('minders_auth')==='1'){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  load(); setTimeout(renderAll,0);
+}
+
+// ── RENDER ALL ───────────────────────────────────────
+function renderAll(){ renderTopbar(); renderMeta(); renderLegend(); renderTree(); }
+
+function renderTopbar(){
+  const n = state.account.name||'Nova conta';
+  const bdr = state.account.bdr ? ` · ${state.account.bdr}` : '';
+  document.getElementById('topbar-account-name').innerHTML=`${n}<span>${bdr}</span>`;
+}
+
+function renderMeta(){
+  const a=state.account;
+  const fields=[
+    {key:'segment',  label:a.segment   ||'+ Segmento'},
+    {key:'territory',label:a.territory ||'+ Território'},
+    {key:'stage',    label:a.stage     ||'+ Stage'},
+    {key:'product',  label:a.product   ||'+ Produto'},
+  ];
+  document.getElementById('account-meta-bar').innerHTML=
+    fields.map(f=>`<div class="meta-pill ${a[f.key]?'set':''}" onclick="openAccountModal()">${f.label}</div>`).join('');
+}
+
+function renderLegend(){
+  const used=new Set(state.people.flatMap(p=>p.labels||[]));
+  document.getElementById('legend').innerHTML= used.size===0 ? '' :
+    LABELS.filter(l=>used.has(l.id)).map(l=>`
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${l.color}"></div>
+        <span>${l.label}</span>
+      </div>`).join('');
+}
+
+// ── TREE RENDER ──────────────────────────────────────
+function renderTree(){
+  const container=document.getElementById('org-tree');
+  container.innerHTML='';
+
+  if(state.people.length===0){
+    container.innerHTML=`
+      <div class="empty-state">
+        <h2>Nenhuma pessoa ainda</h2>
+        <p>Cole um JSON gerado pelo Claude acima, ou adicione manualmente.</p>
+        <button class="btn-primary" style="width:auto;padding:10px 24px;" onclick="openPersonModal(null,null)">+ Adicionar pessoa</button>
+      </div>`;
+    document.getElementById('drag-hint').textContent='';
+    return;
+  }
+
+  document.getElementById('drag-hint').textContent='Arraste os cards para reorganizar a hierarquia';
+
+  const roots=state.people.filter(p=>!p.parentId||p.parentId==='');
+
+  function buildNode(person){
+    const wrap=document.createElement('div');
+    wrap.className='tree-node';
+
+    const cardEl=makeCard(person);
+    wrap.appendChild(cardEl);
+
+    const children=state.people.filter(p=>p.parentId===person.id);
+
+    // add-child button + v-line connector
+    const connWrap=document.createElement('div');
+    connWrap.style.cssText='display:flex;flex-direction:column;align-items:center;';
+    const vShort=document.createElement('div');
+    vShort.className='v-line';
+    vShort.style.height='14px';
+    const addBtn=document.createElement('button');
+    addBtn.className='add-child-btn';
+    addBtn.title='Adicionar subordinado direto';
+    addBtn.textContent='+';
+    addBtn.onclick=()=>openPersonModal(null,person.id);
+    connWrap.appendChild(vShort);
+    connWrap.appendChild(addBtn);
+    wrap.appendChild(connWrap);
+
+    if(children.length>0){
+      const vDown=document.createElement('div');
+      vDown.className='v-line';
+      vDown.style.height='18px';
+      wrap.appendChild(vDown);
+
+      const childrenWrap=document.createElement('div');
+      childrenWrap.className='children-wrap';
+
+      if(children.length===1){
+        childrenWrap.appendChild(buildNode(children[0]));
+      } else {
+        const row=document.createElement('div');
+        row.className='children-row';
+        children.forEach(child=>{
+          const col=document.createElement('div');
+          col.className='child-col';
+          const vTop=document.createElement('div');
+          vTop.className='v-line';
+          vTop.style.height='20px';
+          col.appendChild(vTop);
+          col.appendChild(buildNode(child));
+          row.appendChild(col);
+        });
+        childrenWrap.appendChild(row);
+        setTimeout(()=>{
+          const cols=row.querySelectorAll(':scope > .child-col');
+          if(cols.length<2) return;
+          const rr=row.getBoundingClientRect();
+          const fr=cols[0].getBoundingClientRect();
+          const lr=cols[cols.length-1].getBoundingClientRect();
+          const l=fr.left-rr.left+fr.width/2;
+          const r=lr.left-rr.left+lr.width/2;
+          const hLine=document.createElement('div');
+          hLine.style.cssText=`position:absolute;top:0;left:${l}px;width:${r-l}px;height:2px;background:var(--border2);pointer-events:none;`;
+          row.appendChild(hLine);
+        },0);
+      }
+      wrap.appendChild(childrenWrap);
+    }
+
+    return wrap;
+  }
+
+  const treeRoot=document.createElement('div');
+  treeRoot.className='tree-root';
+
+  if(roots.length===1){
+    treeRoot.appendChild(buildNode(roots[0]));
+  } else {
+    const row=document.createElement('div');
+    row.className='children-row';
+    roots.forEach(r=>{
+      const col=document.createElement('div');
+      col.className='child-col';
+      col.appendChild(buildNode(r));
+      row.appendChild(col);
+    });
+    treeRoot.appendChild(row);
+  }
+
+  container.appendChild(treeRoot);
+}
+
+// ── CARD ─────────────────────────────────────────────
+function makeCard(person){
+  const labels=person.labels||[];
+  const card=document.createElement('div');
+  card.className='card';
+  card.dataset.id=person.id;
+
+  // accent border from first label
+  const firstLabel=LABELS.find(l=>labels.includes(l.id));
+  if(firstLabel){
+    card.style.borderLeftWidth='3px';
+    card.style.borderLeftStyle='solid';
+    card.style.borderLeftColor=firstLabel.color;
+  }
+
+  const initials=person.initials||person.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  // avatar — link if linkedin available
+  const avatarTag = person.linkedin
+    ? `<a class="avatar" href="${person.linkedin}" target="_blank" rel="noopener" title="Abrir LinkedIn" draggable="false">${initials}</a>`
+    : `<div class="avatar">${initials}</div>`;
+
+  const labelTags=LABELS.filter(l=>labels.includes(l.id))
+    .map(l=>`<span class="label-tag" style="background:${l.color}22;color:${l.color}">${l.label}</span>`)
+    .join('');
+
+  const linkedinRow = person.linkedin
+    ? `<a class="card-linkedin" href="${person.linkedin}" target="_blank" rel="noopener" draggable="false">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        linkedin
+      </a>`
+    : '';
+
+  card.innerHTML=`
+    <div class="card-top">
+      ${avatarTag}
+      <div class="card-info">
+        <div class="card-name">${person.name}</div>
+        <div class="card-role">${person.role||''}</div>
+        ${labelTags ? `<div class="card-labels">${labelTags}</div>` : ''}
+      </div>
+    </div>
+    ${person.note ? `<div class="card-note">${person.note}</div>` : ''}
+    ${linkedinRow}
+  `;
+
+  // click to edit (not on links)
+  card.addEventListener('click', e=>{
+    if(e.target.closest('a')) return;
+    openPersonModal(person.id, person.parentId);
+  });
+
+  // ── DRAG ──
+  card.draggable=true;
+
+  card.addEventListener('dragstart', e=>{
+    dragId=person.id;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain', person.id);
+  });
+
+  card.addEventListener('dragend', ()=>{
+    dragId=null; dragOverId=null; dragZone=null;
+    card.classList.remove('dragging');
+    clearDragStyles();
+  });
+
+  card.addEventListener('dragover', e=>{
+    if(dragId===person.id) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+
+    const rect=card.getBoundingClientRect();
+    const y=e.clientY-rect.top;
+    const h=rect.height;
+    let zone;
+    if(y < h*0.3)       zone='above';
+    else if(y > h*0.7)  zone='below';
+    else                  zone='side';
+
+    if(dragOverId!==person.id || dragZone!==zone){
+      dragOverId=person.id; dragZone=zone;
+      clearDragStyles();
+      if(zone==='above')      card.classList.add('drag-over-above');
+      else if(zone==='below') card.classList.add('drag-over-below');
+      else                    card.classList.add('drag-over-side');
+    }
+  });
+
+  card.addEventListener('dragleave', ()=>{
+    card.classList.remove('drag-over-above','drag-over-below','drag-over-side');
+    if(dragOverId===person.id){ dragOverId=null; dragZone=null; }
+  });
+
+  card.addEventListener('drop', e=>{
+    e.preventDefault();
+    if(!dragId || dragId===person.id) return;
+    const src=state.people.find(p=>p.id===dragId);
+    const tgt=state.people.find(p=>p.id===person.id);
+    if(!src||!tgt) return;
+
+    // prevent dropping onto own descendant
+    if(isDescendant(tgt.id, src.id)){ showToast('Não é possível mover para um subordinado'); return; }
+
+    if(dragZone==='below'){
+      // src becomes direct child of tgt
+      src.parentId=tgt.id;
+    } else if(dragZone==='above'){
+      // src becomes sibling of tgt (same parent)
+      src.parentId=tgt.parentId||'';
+    } else {
+      // side: swap positions (same level — swap parentIds if same parent, else move to same parent)
+      const srcParent=src.parentId||'';
+      const tgtParent=tgt.parentId||'';
+      if(srcParent===tgtParent){
+        // reorder within same level — just ensure same parent
+        src.parentId=tgtParent;
+      } else {
+        src.parentId=tgtParent;
+      }
+    }
+
+    save(); renderAll();
+    clearDragStyles();
+    showToast('Hierarquia atualizada ✓');
+  });
+
+  return card;
+}
+
+function clearDragStyles(){
+  document.querySelectorAll('.card').forEach(c=>{
+    c.classList.remove('drag-over-above','drag-over-below','drag-over-side');
+  });
+}
+
+function isDescendant(candidateId, ancestorId){
+  // returns true if candidateId is a descendant of ancestorId
+  let cur=state.people.find(p=>p.id===candidateId);
+  while(cur && cur.parentId){
+    if(cur.parentId===ancestorId) return true;
+    cur=state.people.find(p=>p.id===cur.parentId);
+  }
+  return false;
+}
+
+// ── PERSON MODAL ─────────────────────────────────────
+function openPersonModal(personId, defaultParentId){
+  editingPersonId=personId;
+  const person=personId ? state.people.find(p=>p.id===personId) : null;
+  document.getElementById('modal-title').textContent=person?'Editar pessoa':'Adicionar pessoa';
+  document.getElementById('m-name').value    =person?.name||'';
+  document.getElementById('m-role').value    =person?.role||'';
+  document.getElementById('m-linkedin').value=person?.linkedin||'';
+  document.getElementById('m-initials').value=person?.initials||'';
+  document.getElementById('m-note').value    =person?.note||'';
+
+  // labels
+  const grid=document.getElementById('label-grid');
+  grid.innerHTML=LABELS.map(l=>`
+    <label class="label-toggle ${(person?.labels||[]).includes(l.id)?'active':''}"
+           style="${(person?.labels||[]).includes(l.id)?`background:${l.color}18;border-color:${l.color};`:''}"
+           data-id="${l.id}" data-color="${l.color}">
+      <input type="checkbox" value="${l.id}" ${(person?.labels||[]).includes(l.id)?'checked':''}>
+      <span class="dot" style="background:${l.color}"></span>${l.label}
+    </label>`).join('');
+  grid.querySelectorAll('.label-toggle').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const cb=el.querySelector('input');
+      cb.checked=!cb.checked;
+      const color=el.dataset.color;
+      if(cb.checked){el.classList.add('active');el.style.background=color+'18';el.style.borderColor=color;}
+      else{el.classList.remove('active');el.style.background='';el.style.borderColor='';}
+    });
+  });
+
+  // parent select
+  const sel=document.getElementById('m-parent');
+  sel.innerHTML='<option value="">— topo da hierarquia —</option>';
+  state.people.filter(p=>p.id!==personId).forEach(p=>{
+    const opt=document.createElement('option');
+    opt.value=p.id;
+    opt.textContent=p.name+(p.role?` (${p.role})`:'');
+    if((person?.parentId===p.id)||(!person&&defaultParentId===p.id)) opt.selected=true;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('modal-delete-btn').style.display=person?'block':'none';
+  document.getElementById('person-modal').classList.add('open');
+  document.getElementById('m-name').focus();
+}
+
+function closePersonModal(){ document.getElementById('person-modal').classList.remove('open'); editingPersonId=null; }
+
+function savePerson(){
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){alert('Nome obrigatório');return;}
+  const role    =document.getElementById('m-role').value.trim();
+  const linkedin=document.getElementById('m-linkedin').value.trim();
+  const initials=document.getElementById('m-initials').value.trim().toUpperCase();
+  const note    =document.getElementById('m-note').value.trim();
+  const parentId=document.getElementById('m-parent').value;
+  const labels  =[...document.querySelectorAll('#label-grid input:checked')].map(cb=>cb.value);
+
+  if(editingPersonId){
+    const idx=state.people.findIndex(p=>p.id===editingPersonId);
+    state.people[idx]={...state.people[idx],name,role,linkedin,initials,note,parentId,labels};
+  } else {
+    state.people.push({id:uid(),name,role,linkedin,initials,note,parentId,labels});
+  }
+  save(); renderAll(); closePersonModal(); showToast('Salvo ✓');
+}
+
+function deletePerson(){
+  if(!editingPersonId) return;
+  if(!confirm('Remover esta pessoa?')) return;
+  const person=state.people.find(p=>p.id===editingPersonId);
+  state.people=state.people.filter(p=>p.id!==editingPersonId);
+  state.people.forEach(p=>{ if(p.parentId===editingPersonId) p.parentId=person?.parentId||''; });
+  save(); renderAll(); closePersonModal(); showToast('Removido');
+}
+
+// ── ACCOUNT MODAL ────────────────────────────────────
+function openAccountModal(){
+  const a=state.account;
+  document.getElementById('am-name').value     =a.name||'';
+  document.getElementById('am-segment').value  =a.segment||'';
+  document.getElementById('am-territory').value=a.territory||'';
+  document.getElementById('am-bdr').value      =a.bdr||'';
+  document.getElementById('am-stage').value    =a.stage||'';
+  document.getElementById('am-product').value  =a.product||'';
+  document.getElementById('account-modal').classList.add('open');
+}
+function closeAccountModal(){ document.getElementById('account-modal').classList.remove('open'); }
+function saveAccount(){
+  state.account={
+    name:     document.getElementById('am-name').value.trim(),
+    segment:  document.getElementById('am-segment').value.trim(),
+    territory:document.getElementById('am-territory').value,
+    bdr:      document.getElementById('am-bdr').value.trim(),
+    stage:    document.getElementById('am-stage').value,
+    product:  document.getElementById('am-product').value,
+  };
+  save(); renderAll(); closeAccountModal(); showToast('Conta atualizada ✓');
+}
+
+// ── IMPORT ───────────────────────────────────────────
+function doImport(){
+  const raw=document.getElementById('import-textarea').value.trim();
+  if(!raw) return;
+  try{
+    const imported=JSON.parse(raw);
+    if(imported.account) state.account={...state.account,...imported.account};
+    if(imported.people&&Array.isArray(imported.people)){
+      imported.people.forEach(p=>{ if(!p.id)p.id=uid(); if(!p.labels)p.labels=[]; if(!p.linkedin)p.linkedin=''; });
+      state.people=imported.people;
+    }
+    save(); renderAll();
+    document.getElementById('import-textarea').value='';
+    document.getElementById('import-panel').removeAttribute('open');
+    showToast('Importado com sucesso ✓');
+  } catch(e){ alert('JSON inválido.\n\n'+e.message); }
+}
+
+// ── EXPORT ───────────────────────────────────────────
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(state.account.name||'stakeholder')+'.json';
+  a.click();
+}
+
+// ── UTILS ────────────────────────────────────────────
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// close modals
+document.getElementById('person-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('person-modal')) closePersonModal(); });
+document.getElementById('account-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('account-modal')) closeAccountModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closePersonModal();closeAccountModal();} });
+</script>
+</body>
+</html>
