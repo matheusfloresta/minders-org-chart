@@ -3,353 +3,963 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minders · Stakeholder Map</title>
+<meta name="color-scheme" content="light only">
+<title>Minders · Org Chart Hub</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+/* System font fallbacks — works offline and via file:// */
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap');
+</style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
 :root {
-  --bg:#0e0f11;--surface:#16181c;--surface2:#1e2026;
-  --border:#2a2d35;--border2:#363a45;
-  --text:#f0f1f3;--text2:#8b909e;--text3:#555b6a;
-  --mint:#00e5a0;--red:#ff4d6d;
+  --m-black:   #1c1f24;
+  --m-white:   #f2f2f2;
+  --m-lav:     #8799fb;
+  --m-cyan:    #a4f1fb;
+  --m-mint:    #b1fbae;
+  --m-pink:    #fc9edc;
+  --m-coral:   #fc7e7f;
+  --m-w05:     rgba(242,242,242,.05);
+  --m-w10:     rgba(242,242,242,.10);
+  --m-w15:     rgba(242,242,242,.15);
+  --m-w50:     rgba(242,242,242,.50);
+  --m-b05:     rgba(28,31,36,.05);
+  --m-b10:     rgba(28,31,36,.10);
+  --m-b50:     rgba(28,31,36,.50);
+  --m-display: 'Archivo Black', 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+  --m-mono:    'Space Mono', 'Courier New', Courier, monospace;
+  --r:         18px;
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ background:var(--m-black); color:var(--m-white); font-family:var(--m-mono); min-height:100vh; }
 
-/* LOGIN */
-#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.login-box{width:360px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px 36px;}
-.login-logo{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--mint);text-transform:uppercase;margin-bottom:32px;display:flex;align-items:center;gap:8px;}
-.login-logo::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--mint);}
-.login-box h1{font-size:20px;font-weight:600;margin-bottom:6px;}
-.login-box p{font-size:12px;color:var(--text2);margin-bottom:28px;}
-.field-group{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
-.field-group input{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;width:100%;}
-.field-group input::placeholder{color:var(--text3);}
-.field-group input:focus{border-color:var(--mint);}
-.btn-primary{width:100%;background:var(--mint);color:#0a0b0d;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;letter-spacing:.02em;}
-.btn-primary:hover{opacity:.88;}
-.login-error{font-size:11px;color:var(--red);margin-top:10px;min-height:16px;text-align:center;}
-.login-hint{margin-top:20px;font-size:11px;color:var(--text3);}
+/* ── SCREENS ── */
+.screen{ display:none; min-height:100vh; flex-direction:column; }
+.screen.active{ display:flex; }
+#s-login{ display:flex; } /* login visível por padrão */
 
-/* APP */
-#app{display:none;min-height:100vh;flex-direction:column;}
-#app.visible{display:flex;}
+/* ── LOGIN ── */
+#s-login{
+  align-items:center; justify-content:center;
+  background:var(--m-black);
+}
+.login-wrap{ width:380px; }
+.login-logo{
+  font-family:var(--m-display);
+  font-size:32px; letter-spacing:-.02em;
+  color:var(--m-white); margin-bottom:40px;
+}
+.login-logo span{ color:var(--m-lav); }
+.login-eyebrow{
+  font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--m-w50); margin-bottom:32px;
+}
+.login-field{ margin-bottom:14px; }
+.login-field label{
+  display:block; font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--m-w50); margin-bottom:6px;
+}
+.login-field input{
+  width:100%; background:var(--m-w05); border:1px solid var(--m-w15);
+  border-radius:10px; padding:12px 14px; font-size:13px;
+  color:var(--m-white); font-family:var(--m-mono); outline:none;
+  transition:border-color .15s;
+}
+.login-field input::placeholder{ color:var(--m-w50); }
+.login-field input:focus{ border-color:var(--m-lav); }
+.btn-primary{
+  width:100%; background:var(--m-white); color:var(--m-black);
+  border:none; border-radius:10px; padding:13px;
+  font-family:var(--m-display); font-size:14px; letter-spacing:-.01em;
+  cursor:pointer; transition:opacity .15s; margin-top:8px;
+}
+.btn-primary:hover{ opacity:.88; }
+.login-err{ font-size:11px; color:var(--m-coral); margin-top:10px; min-height:16px; }
+.login-hint{ font-size:10px; color:var(--m-w50); margin-top:20px; text-align:center; }
 
-/* TOPBAR */
-.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50;}
-.topbar-logo{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;flex-shrink:0;}
-.topbar-divider{width:1px;height:20px;background:var(--border2);}
-.account-name-display{font-size:13px;font-weight:600;color:var(--text);flex:1;}
-.account-name-display span{color:var(--text2);font-weight:400;font-size:12px;margin-left:6px;}
-.topbar-actions{display:flex;align-items:center;gap:8px;}
-.btn-ghost{background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;white-space:nowrap;}
-.btn-ghost:hover{border-color:var(--mint);color:var(--mint);}
-.btn-danger-ghost{background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--text3);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;}
-.btn-danger-ghost:hover{border-color:var(--red);color:var(--red);}
+/* ── TOPBAR ── */
+.topbar{
+  height:52px; background:var(--m-black);
+  border-bottom:1px solid var(--m-w15);
+  display:flex; align-items:center; padding:0 24px; gap:16px;
+  position:sticky; top:0; z-index:100; flex-shrink:0;
+}
+.topbar-logo{
+  font-family:var(--m-display); font-size:16px; letter-spacing:-.02em;
+  color:var(--m-white); flex-shrink:0;
+}
+.topbar-logo span{ color:var(--m-lav); }
+.topbar-div{ width:1px; height:20px; background:var(--m-w15); }
+.topbar-title{ font-size:11px; color:var(--m-w50); flex:1; letter-spacing:.04em; }
+.topbar-actions{ display:flex; align-items:center; gap:8px; }
 
-/* CANVAS */
-.canvas{flex:1;overflow:auto;padding:40px 40px 100px;display:flex;flex-direction:column;align-items:center;}
+/* chips */
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 12px; border-radius:20px;
+  font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  font-family:var(--m-mono); font-weight:700; cursor:pointer;
+  transition:all .12s; border:1px solid var(--m-w15);
+  background:none; color:var(--m-w50); white-space:nowrap;
+}
+.chip:hover{ border-color:var(--m-w50); color:var(--m-white); }
+.chip.active{ background:var(--m-white); color:var(--m-black); border-color:var(--m-white); }
+.chip.lav{ background:var(--m-lav); color:var(--m-black); border-color:var(--m-lav); }
+.chip.coral{ background:var(--m-coral); color:var(--m-black); border-color:var(--m-coral); }
+.chip.mint{ background:var(--m-mint); color:var(--m-black); border-color:var(--m-mint); }
+.chip.sm{ padding:3px 8px; font-size:9px; }
 
-/* META PILLS */
-.account-meta{width:100%;max-width:1100px;display:flex;align-items:center;gap:10px;margin-bottom:32px;flex-wrap:wrap;}
-.meta-pill{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .12s;}
-.meta-pill:hover{border-color:var(--border2);color:var(--text);}
-.meta-pill.set{color:var(--text);border-color:var(--border2);}
+/* ── HUB SCREEN ── */
+#s-hub{ background:var(--m-black); }
+.hub-canvas{
+  flex:1; padding:40px 32px 80px; overflow-y:auto;
+}
+.hub-header{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  margin-bottom:40px; flex-wrap:wrap; gap:16px;
+}
+.hub-title{
+  font-family:var(--m-display); font-size:36px; letter-spacing:-.02em;
+  line-height:1; color:var(--m-white);
+}
+.hub-title span{ color:var(--m-lav); }
 
-/* LEGEND */
-.legend{width:100%;max-width:1100px;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);}
-.legend-dot{width:8px;height:8px;border-radius:2px;}
+/* region blocks */
+.region-block{ margin-bottom:48px; }
+.region-header{
+  display:flex; align-items:center; gap:14px;
+  margin-bottom:20px; padding-bottom:12px;
+  border-bottom:1px solid var(--m-w15);
+}
+.region-label{
+  font-family:var(--m-display); font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--m-w50);
+}
+.region-count{
+  font-size:10px; color:var(--m-w50); letter-spacing:.06em;
+}
 
-/* IMPORT */
-.import-panel{width:100%;max-width:1100px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:28px;}
-.import-panel summary{font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:6px;}
-.import-panel summary::-webkit-details-marker{display:none;}
-.import-panel summary::before{content:'▶';font-size:9px;color:var(--text3);transition:transform .15s;}
-.import-panel[open] summary::before{transform:rotate(90deg);}
-.import-panel textarea{width:100%;margin-top:14px;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:11px;font-family:'Space Mono',monospace;color:var(--mint);resize:vertical;min-height:90px;outline:none;}
-.import-actions{display:flex;gap:8px;margin-top:10px;}
+/* owner sub-sections */
+.owner-section{ margin-bottom:28px; }
+.owner-label{
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--m-w50); margin-bottom:12px;
+  display:flex; align-items:center; gap:8px;
+}
+.owner-dot{
+  width:6px; height:6px; border-radius:50%;
+  background:var(--m-lav); flex-shrink:0;
+}
 
-/* TREE */
-#org-tree{width:100%;max-width:1100px;}
-.tree-root{display:flex;flex-direction:column;align-items:center;}
-.tree-node{display:flex;flex-direction:column;align-items:center;position:relative;}
-.v-line{width:2px;flex-shrink:0;background:var(--border2);}
-.children-wrap{display:flex;flex-direction:column;align-items:center;}
-.children-row{display:flex;gap:12px;align-items:flex-start;position:relative;}
-.child-col{display:flex;flex-direction:column;align-items:center;}
+/* account cards grid */
+.accounts-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+  gap:12px;
+}
+.account-card{
+  background:var(--m-w05); border:1px solid var(--m-w15);
+  border-radius:var(--r); padding:20px; cursor:pointer;
+  transition:all .15s; position:relative; overflow:hidden;
+}
+.account-card:hover{
+  background:var(--m-w10); border-color:var(--m-w50);
+  transform:translateY(-2px);
+}
+.account-card::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+}
+.account-card.br::before{ background:var(--m-mint); }
+.account-card.nola::before{ background:var(--m-lav); }
+.account-card.sola::before{ background:var(--m-cyan); }
+.account-card.iberia::before{ background:var(--m-pink); }
 
-/* CARD */
+.ac-name{
+  font-family:var(--m-display); font-size:16px; letter-spacing:-.01em;
+  color:var(--m-white); margin-bottom:6px; line-height:1.2;
+}
+.ac-segment{ font-size:10px; color:var(--m-w50); margin-bottom:12px; }
+.ac-meta{ display:flex; flex-wrap:wrap; gap:6px; }
+.ac-people{
+  font-size:10px; color:var(--m-w50); margin-top:12px;
+  letter-spacing:.04em;
+}
+
+/* add account card */
+.account-card-add{
+  background:none; border:1px dashed var(--m-w15);
+  border-radius:var(--r); padding:20px; cursor:pointer;
+  transition:all .15s; display:flex; align-items:center;
+  justify-content:center; gap:10px; color:var(--m-w50);
+  font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+  min-height:120px;
+}
+.account-card-add:hover{ border-color:var(--m-lav); color:var(--m-lav); }
+
+/* empty region */
+.region-empty{
+  font-size:11px; color:var(--m-w50); padding:16px 0;
+  letter-spacing:.04em;
+}
+
+/* ── ORG CHART SCREEN ── */
+#s-chart{ background:var(--m-black); }
+.chart-canvas{
+  flex:1; overflow:auto; padding:40px 32px 100px;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+/* breadcrumb */
+.m-breadcrumb{
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+}
+
+/* account meta bar */
+.account-metabar{
+  width:100%; max-width:1100px;
+  display:flex; align-items:center; gap:8px; margin-bottom:28px;
+  flex-wrap:wrap;
+}
+
+/* legend */
+.chart-legend{
+  width:100%; max-width:1100px;
+  display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;
+}
+.legend-item{ display:flex; align-items:center; gap:5px; font-size:10px; color:var(--m-w50); }
+.legend-dot{ width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+
+/* import panel */
+.import-panel{
+  width:100%; max-width:1100px;
+  background:var(--m-w05); border:1px solid var(--m-w15);
+  border-radius:var(--r); padding:18px 20px; margin-bottom:24px;
+}
+.import-panel summary{
+  font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--m-w50); cursor:pointer; user-select:none;
+  list-style:none; display:flex; align-items:center; gap:8px;
+}
+.import-panel summary::-webkit-details-marker{ display:none; }
+.import-panel summary::before{ content:'▶'; font-size:9px; color:var(--m-w50); transition:transform .15s; }
+.import-panel[open] summary::before{ transform:rotate(90deg); }
+.import-panel textarea{
+  width:100%; margin-top:14px; background:var(--m-black);
+  border:1px solid var(--m-w15); border-radius:10px;
+  padding:12px; font-size:11px; font-family:var(--m-mono);
+  color:var(--m-cyan); resize:vertical; min-height:90px; outline:none;
+}
+.import-actions{ display:flex; gap:8px; margin-top:10px; }
+
+/* ── TREE ── */
+#org-tree{ width:100%; max-width:1100px; }
+.tree-root{ display:flex; flex-direction:column; align-items:center; }
+.tree-node{ display:flex; flex-direction:column; align-items:center; }
+.v-line{ width:2px; background:var(--m-w15); flex-shrink:0; }
+.children-wrap{ display:flex; flex-direction:column; align-items:center; }
+.children-row{ display:flex; gap:12px; align-items:flex-start; position:relative; }
+.child-col{ display:flex; flex-direction:column; align-items:center; }
+
+/* ── CARD ── */
 .card{
-  width:192px;background:var(--surface);border:1px solid var(--border);
-  border-radius:12px;padding:13px 12px 10px;cursor:grab;
-  transition:border-color .15s,box-shadow .15s,opacity .15s;
-  position:relative;flex-shrink:0;user-select:none;
+  width:196px; background:var(--m-w05); border:1px solid var(--m-w15);
+  border-radius:var(--r); padding:14px 13px 11px;
+  cursor:grab; transition:all .15s;
+  position:relative; flex-shrink:0; user-select:none;
 }
-.card:hover{border-color:var(--border2);box-shadow:0 0 0 3px rgba(255,255,255,.03);}
-.card.dragging{opacity:.35;cursor:grabbing;}
-.card.drag-over-above{border-top:2px solid var(--mint);}
-.card.drag-over-below{border-bottom:2px solid var(--mint);}
-.card.drag-over-side{border:2px dashed var(--mint);}
+.card:hover{ background:var(--m-w10); border-color:var(--m-w50); }
+.card.dragging{ opacity:.3; cursor:grabbing; }
+.card.drag-over-above{ border-top:2px solid var(--m-lav); }
+.card.drag-over-below{ border-bottom:2px solid var(--m-lav); }
+.card.drag-over-side{ border:2px dashed var(--m-lav); }
 
-.card-top{display:flex;align-items:flex-start;gap:9px;margin-bottom:9px;}
-.avatar{width:34px;height:34px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;font-family:'Space Mono',monospace;text-decoration:none;}
-.avatar:hover{border-color:var(--mint);}
-.card-info{flex:1;min-width:0;}
-.card-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}
-.card-role{font-size:10px;color:var(--text2);margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.card-labels{display:flex;flex-wrap:wrap;gap:3px;margin-top:1px;}
-.label-tag{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 5px;border-radius:4px;line-height:1.4;}
-.card-note{font-size:10px;color:var(--text3);margin-top:6px;line-height:1.4;font-style:italic;}
-.card-linkedin{display:block;margin-top:6px;font-size:9px;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .12s;}
-.card-linkedin:hover{color:var(--mint);}
-.card-linkedin svg{flex-shrink:0;}
+.card-top{ display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; }
+.avatar{
+  width:36px; height:36px; border-radius:50%;
+  background:var(--m-w10); border:1px solid var(--m-w15);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--m-display); font-size:11px; color:var(--m-white);
+  flex-shrink:0; text-decoration:none; transition:border-color .12s;
+  letter-spacing:-.01em;
+}
+a.avatar:hover{ border-color:var(--m-lav); }
+.card-info{ flex:1; min-width:0; }
+.card-name{
+  font-family:var(--m-display); font-size:12px; letter-spacing:-.01em;
+  color:var(--m-white); white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; line-height:1.2;
+}
+.card-role{
+  font-size:10px; color:var(--m-w50); margin-top:3px;
+  line-height:1.4; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis;
+}
+.card-labels{ display:flex; flex-wrap:wrap; gap:3px; margin-top:8px; }
+.label-tag{
+  font-size:9px; font-weight:700; letter-spacing:.05em;
+  text-transform:uppercase; padding:2px 6px; border-radius:4px;
+}
+.card-note{
+  font-size:9px; color:var(--m-w50); margin-top:6px;
+  line-height:1.5; font-style:italic;
+}
+.card-linkedin{
+  display:flex; align-items:center; gap:4px; margin-top:7px;
+  font-size:9px; color:var(--m-w50); text-decoration:none;
+  transition:color .12s; letter-spacing:.04em;
+}
+.card-linkedin:hover{ color:var(--m-lav); }
 
-.add-child-btn{margin-top:0;width:32px;height:22px;border:1px dashed var(--border2);border-radius:6px;background:none;color:var(--text3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;}
-.add-child-btn:hover{border-color:var(--mint);color:var(--mint);}
+.add-child-btn{
+  width:28px; height:20px; border:1px dashed var(--m-w15);
+  border-radius:6px; background:none; color:var(--m-w50);
+  font-size:14px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center;
+  transition:all .12s; flex-shrink:0;
+}
+.add-child-btn:hover{ border-color:var(--m-lav); color:var(--m-lav); }
 
-/* EMPTY */
-.empty-state{text-align:center;padding:60px 20px;}
-.empty-state h2{font-size:16px;font-weight:600;margin-bottom:8px;}
-.empty-state p{font-size:13px;color:var(--text2);line-height:1.6;max-width:320px;margin:0 auto 24px;}
+/* empty state */
+.empty-state{
+  text-align:center; padding:80px 20px; width:100%;
+}
+.empty-state h2{
+  font-family:var(--m-display); font-size:28px; letter-spacing:-.02em;
+  color:var(--m-white); margin-bottom:12px;
+}
+.empty-state p{ font-size:12px; color:var(--m-w50); line-height:1.7; max-width:320px; margin:0 auto 28px; }
 
-/* MODAL */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:20px;}
-.modal-bg.open{display:flex;}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:26px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;}
-.modal h2{font-size:15px;font-weight:600;margin-bottom:20px;}
-.modal-field{margin-bottom:13px;}
-.modal-field label{display:block;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:5px;}
-.modal-field input,.modal-field select{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color .12s;}
-.modal-field input::placeholder{color:var(--text3);}
-.modal-field input:focus,.modal-field select:focus{border-color:var(--mint);}
-.modal-field select option{background:var(--surface2);}
-.label-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.label-toggle{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:500;color:var(--text2);transition:all .12s;user-select:none;background:var(--bg);}
-.label-toggle input{display:none;}
-.label-toggle .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.label-toggle.active{color:var(--text);border-color:transparent;}
-.modal-actions{display:flex;gap:8px;margin-top:20px;}
-.btn-modal-save{flex:1;background:var(--mint);color:#0a0b0d;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
-.btn-modal-cancel{flex:1;background:var(--surface2);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;}
-.btn-modal-delete{background:none;border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:16px;cursor:pointer;color:var(--text3);transition:all .12s;}
-.btn-modal-delete:hover{border-color:var(--red);color:var(--red);}
+/* drag hint */
+.drag-hint{ font-size:10px; color:var(--m-w50); margin-top:10px; letter-spacing:.06em; }
 
-/* linkedin input icon */
-.input-with-icon{position:relative;}
-.input-with-icon input{padding-left:32px;}
-.input-with-icon .icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.4;}
+/* ── MODALS ── */
+.modal-bg{
+  display:none; position:fixed; inset:0;
+  background:rgba(28,31,36,.85); z-index:300;
+  align-items:center; justify-content:center; padding:20px;
+}
+.modal-bg.open{ display:flex; }
+.modal{
+  background:#22252b; border:1px solid var(--m-w15);
+  border-radius:var(--r); padding:28px; width:100%;
+  max-width:420px; max-height:90vh; overflow-y:auto;
+}
+.modal h2{
+  font-family:var(--m-display); font-size:18px; letter-spacing:-.01em;
+  color:var(--m-white); margin-bottom:22px;
+}
+.modal-field{ margin-bottom:14px; }
+.modal-field label{
+  display:block; font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--m-w50); margin-bottom:5px;
+}
+.modal-field input,.modal-field select{
+  width:100%; background:var(--m-black); border:1px solid var(--m-w15);
+  border-radius:10px; padding:10px 13px; font-size:12px;
+  color:var(--m-white); font-family:var(--m-mono); outline:none;
+  transition:border-color .12s;
+}
+.modal-field input::placeholder{ color:var(--m-w50); }
+.modal-field input:focus,.modal-field select:focus{ border-color:var(--m-lav); }
+.modal-field select option{ background:#22252b; }
+.input-icon-wrap{ position:relative; }
+.input-icon-wrap input{ padding-left:32px; }
+.input-icon-wrap .i-icon{ position:absolute; left:11px; top:50%; transform:translateY(-50%); opacity:.35; pointer-events:none; }
 
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 18px;font-size:12px;font-weight:500;color:var(--text);z-index:999;transition:transform .25s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
-.toast.show{transform:translateX(-50%) translateY(0);}
+/* label grid */
+.label-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.label-toggle{
+  display:flex; align-items:center; gap:7px;
+  padding:8px 10px; border-radius:10px;
+  border:1px solid var(--m-w15); cursor:pointer;
+  font-size:10px; font-weight:700; letter-spacing:.04em;
+  color:var(--m-w50); transition:all .12s;
+  user-select:none; background:var(--m-black);
+}
+.label-toggle input{ display:none; }
+.label-toggle .dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.label-toggle.active{ color:var(--m-white); border-color:transparent; }
 
-/* DRAG HINT */
-.drag-hint{font-size:10px;color:var(--text3);text-align:center;margin-top:8px;letter-spacing:.04em;}
+.modal-actions{ display:flex; gap:8px; margin-top:22px; }
+.btn-msave{
+  flex:1; background:var(--m-white); color:var(--m-black); border:none;
+  border-radius:10px; padding:11px; font-family:var(--m-display);
+  font-size:13px; letter-spacing:-.01em; cursor:pointer;
+}
+.btn-mcancel{
+  flex:1; background:var(--m-w05); color:var(--m-w50);
+  border:1px solid var(--m-w15); border-radius:10px;
+  padding:11px; font-size:12px; cursor:pointer; font-family:var(--m-mono);
+}
+.btn-mdel{
+  background:none; border:1px solid var(--m-w15); border-radius:10px;
+  padding:11px 14px; font-size:16px; cursor:pointer; color:var(--m-w50);
+  transition:all .12s;
+}
+.btn-mdel:hover{ border-color:var(--m-coral); color:var(--m-coral); }
+
+/* new account modal — region/owner select */
+.region-select-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.region-option{
+  display:flex; align-items:center; justify-content:center;
+  padding:12px; border-radius:10px; border:1px solid var(--m-w15);
+  cursor:pointer; font-family:var(--m-display); font-size:13px;
+  letter-spacing:-.01em; color:var(--m-w50); transition:all .12s;
+  user-select:none;
+}
+.region-option input{ display:none; }
+.region-option.sel{ color:var(--m-black); }
+.region-option.br.sel{ background:var(--m-mint); border-color:var(--m-mint); }
+.region-option.nola.sel{ background:var(--m-lav); border-color:var(--m-lav); }
+.region-option.sola.sel{ background:var(--m-cyan); border-color:var(--m-cyan); }
+.region-option.iberia.sel{ background:var(--m-pink); border-color:var(--m-pink); }
+
+/* ── TOAST ── */
+.toast{
+  position:fixed; bottom:24px; left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:#22252b; border:1px solid var(--m-w15);
+  border-radius:10px; padding:10px 18px;
+  font-size:11px; color:var(--m-white); z-index:999;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap; letter-spacing:.04em;
+}
+.toast.show{ transform:translateX(-50%) translateY(0); }
+
+/* ── EXPORT SNAPSHOT ── */
+.export-overlay{
+  position:fixed; inset:0; background:var(--m-black);
+  z-index:500; display:none; align-items:center; justify-content:center;
+  flex-direction:column; gap:16px;
+}
+.export-overlay.open{ display:flex; }
+.export-overlay p{ font-size:12px; color:var(--m-w50); letter-spacing:.06em; }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">Minders</div>
-    <h1>Stakeholder Map</h1>
-    <p>Acesso restrito ao time Minders.</p>
-    <div class="field-group">
-      <input type="email" id="login-email" placeholder="você@minders.io" autocomplete="email">
-      <input type="password" id="login-password" placeholder="Senha master" autocomplete="current-password">
+<!-- ════════════════════════════════════
+     LOGIN
+════════════════════════════════════ -->
+<div id="s-login" class="screen">
+  <div class="login-wrap">
+    <div class="login-logo">Minders<span>.</span></div>
+    <div class="login-eyebrow">Org Chart Hub · Acesso restrito</div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@minders.io" autocomplete="email">
     </div>
-    <button class="btn-primary" onclick="doLogin()">Entrar</button>
-    <div class="login-error" id="login-error"></div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign in</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-hint">Access restricted to @minders.io</div>
   </div>
-  <div class="login-hint">Só emails @minders.io têm acesso.</div>
 </div>
 
-<!-- APP -->
-<div id="app">
+<!-- ════════════════════════════════════
+     HUB
+════════════════════════════════════ -->
+<div id="s-hub" class="screen">
   <div class="topbar">
-    <div class="topbar-logo">Minders</div>
-    <div class="topbar-divider"></div>
-    <div class="account-name-display" id="topbar-account-name">Stakeholder Map</div>
+    <div class="topbar-logo">Minders<span>.</span></div>
+    <div class="topbar-div"></div>
+    <div class="topbar-title">Org Chart Hub</div>
     <div class="topbar-actions">
-      <button class="btn-ghost" onclick="openAccountModal()">⚙ Conta</button>
-      <button class="btn-ghost" onclick="openPersonModal(null,null)">+ Pessoa</button>
-      <button class="btn-ghost" onclick="exportJSON()">↓ JSON</button>
-      <button class="btn-danger-ghost" onclick="doLogout()">Sair</button>
+      <button class="chip" onclick="openNewAccountModal()">+ New account</button>
+      <button class="chip" onclick="doLogout()">Sign out</button>
     </div>
   </div>
+  <div class="hub-canvas">
+    <div class="hub-header">
+      <div>
+        <div class="hub-title">Accounts<span>.</span></div>
+      </div>
+      <div id="hub-filter" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    </div>
+    <div id="hub-body"></div>
+  </div>
+</div>
 
-  <div class="canvas">
-    <div class="account-meta" id="account-meta-bar"></div>
-    <div class="legend" id="legend"></div>
-
+<!-- ════════════════════════════════════
+     ORG CHART
+════════════════════════════════════ -->
+<div id="s-chart" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">Minders<span>.</span></div>
+    <div class="topbar-div"></div>
+    <div id="topbar-bc" class="m-breadcrumb"></div>
+    <div class="topbar-actions">
+      <button class="chip" onclick="openPersonModal(null,null)">+ Person</button>
+      <button class="chip" onclick="openAccountEditModal()">⚙ Account</button>
+      <button class="chip" onclick="zoomOut()">−</button>
+      <span id="zoom-label" style="font-size:10px;color:var(--m-w50);letter-spacing:.06em;min-width:32px;text-align:center;">100%</span>
+      <button class="chip" onclick="zoomIn()">+</button>
+      <button class="chip" onclick="exportImage()">↓ Image</button>
+      <button class="chip" onclick="exportJSON()">↓ JSON</button>
+      <button class="chip" onclick="goHub()">← Hub</button>
+    </div>
+  </div>
+  <div class="chart-canvas">
+    <div class="account-metabar" id="chart-metabar"></div>
+    <div class="chart-legend" id="chart-legend"></div>
     <details class="import-panel" id="import-panel">
-      <summary>↑ Colar JSON gerado pelo Claude</summary>
-      <textarea id="import-textarea" placeholder='Cole aqui o JSON e clique Importar...'></textarea>
+      <summary>↑ Paste JSON from Claude</summary>
+      <textarea id="import-ta" placeholder='Paste JSON here and click Import...'></textarea>
       <div class="import-actions">
-        <button class="btn-ghost" onclick="doImport()">Importar</button>
-        <button class="btn-ghost" onclick="document.getElementById('import-textarea').value=''">Limpar</button>
+        <button class="chip" onclick="doImport()">Import</button>
+        <button class="chip" onclick="document.getElementById('import-ta').value=''">Clear</button>
       </div>
     </details>
-
     <div id="org-tree"></div>
     <div class="drag-hint" id="drag-hint"></div>
   </div>
 </div>
 
-<!-- MODAL PESSOA -->
-<div class="modal-bg" id="person-modal">
+<!-- ════════════════════════════════════
+     MODAL — nova conta
+════════════════════════════════════ -->
+<div class="modal-bg" id="modal-new-account">
   <div class="modal">
-    <h2 id="modal-title">Adicionar pessoa</h2>
+    <h2>New account</h2>
     <div class="modal-field">
-      <label>Nome</label>
-      <input id="m-name" type="text" placeholder="Nome completo">
+      <label>Company name</label>
+      <input id="na-name" type="text" placeholder="e.g. Jeitto, Caju, Konfío">
     </div>
     <div class="modal-field">
-      <label>Cargo</label>
-      <input id="m-role" type="text" placeholder="ex: CFO, Head of Growth">
+      <label>Segment</label>
+      <input id="na-segment" type="text" placeholder="e.g. Fintech, Retail, SaaS">
     </div>
     <div class="modal-field">
-      <label>LinkedIn URL</label>
-      <div class="input-with-icon">
-        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
-        <input id="m-linkedin" type="url" placeholder="https://linkedin.com/in/...">
+      <label>Region</label>
+      <div class="region-select-grid" id="na-region-grid">
+        <label class="region-option br"><input type="radio" name="na-region" value="BR"> BR</label>
+        <label class="region-option nola"><input type="radio" name="na-region" value="NOLA"> NOLA</label>
+        <label class="region-option sola"><input type="radio" name="na-region" value="SOLA"> SOLA</label>
+        <label class="region-option iberia"><input type="radio" name="na-region" value="IBERIA"> IBERIA</label>
       </div>
     </div>
     <div class="modal-field">
-      <label>Iniciais (avatar)</label>
-      <input id="m-initials" type="text" maxlength="3" placeholder="ex: VS">
+      <label>BDR Owner</label>
+      <select id="na-bdr">
+        <option value="">— select —</option>
+        <option>Floresta</option>
+        <option>Mari</option>
+        <option>Ale</option>
+        <option>Anita</option>
+        <option>Karli</option>
+        <option>Nacho</option>
+      </select>
     </div>
     <div class="modal-field">
-      <label>Nota interna</label>
-      <input id="m-note" type="text" placeholder="ex: Aliado do Victor, acesso direto">
-    </div>
-    <div class="modal-field">
-      <label>Papel na compra</label>
-      <div class="label-grid" id="label-grid"></div>
-    </div>
-    <div class="modal-field">
-      <label>Reporta para</label>
-      <select id="m-parent">
-        <option value="">— topo da hierarquia —</option>
+      <label>Target product</label>
+      <select id="na-product">
+        <option value="">—</option>
+        <option>Amplitude</option>
+        <option>Braze</option>
+        <option>Amplitude + Braze</option>
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn-modal-delete" id="modal-delete-btn" onclick="deletePerson()" title="Remover">🗑</button>
-      <button class="btn-modal-cancel" onclick="closePersonModal()">Cancelar</button>
-      <button class="btn-modal-save" onclick="savePerson()">Salvar</button>
+      <button class="btn-mcancel" onclick="closeModal('modal-new-account')">Cancel</button>
+      <button class="btn-msave" onclick="createAccount()">Create</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL CONTA -->
-<div class="modal-bg" id="account-modal">
+<!-- MODAL — editar conta -->
+<div class="modal-bg" id="modal-edit-account">
   <div class="modal">
-    <h2>Informações da conta</h2>
-    <div class="modal-field"><label>Nome da empresa</label><input id="am-name" type="text" placeholder="ex: Jeitto, Caju, BPBA"></div>
-    <div class="modal-field"><label>Segmento / Vertical</label><input id="am-segment" type="text" placeholder="ex: Fintech, Varejo, SaaS"></div>
-    <div class="modal-field"><label>Território</label>
-      <select id="am-territory"><option value="">—</option><option>Brazil</option><option>North LATAM</option><option>South LATAM</option></select>
+    <h2>Edit account</h2>
+    <div class="modal-field"><label>Name</label><input id="ea-name" type="text"></div>
+    <div class="modal-field"><label>Segment</label><input id="ea-segment" type="text"></div>
+    <div class="modal-field">
+      <label>Region</label>
+      <div class="region-select-grid" id="ea-region-grid">
+        <label class="region-option br"><input type="radio" name="ea-region" value="BR"> BR</label>
+        <label class="region-option nola"><input type="radio" name="ea-region" value="NOLA"> NOLA</label>
+        <label class="region-option sola"><input type="radio" name="ea-region" value="SOLA"> SOLA</label>
+        <label class="region-option iberia"><input type="radio" name="ea-region" value="IBERIA"> IBERIA</label>
+      </div>
     </div>
-    <div class="modal-field"><label>BDR responsável</label><input id="am-bdr" type="text" placeholder="ex: Mari, Nacho, Karli"></div>
-    <div class="modal-field"><label>Stage atual</label>
-      <select id="am-stage"><option value="">—</option><option>Prospecting</option><option>Attempting to Contact</option><option>Connected</option><option>Qualified (S0)</option></select>
+    <div class="modal-field"><label>BDR Owner</label>
+      <select id="ea-bdr">
+        <option value="">— select —</option>
+        <option>Floresta</option><option>Mari</option><option>Ale</option>
+        <option>Anita</option><option>Karli</option><option>Nacho</option>
+      </select>
     </div>
-    <div class="modal-field"><label>Produto alvo</label>
-      <select id="am-product"><option value="">—</option><option>Amplitude</option><option>Braze</option><option>Amplitude + Braze</option></select>
+    <div class="modal-field"><label>Stage</label>
+      <select id="ea-stage">
+        <option value="">—</option>
+        <option>Prospecting</option><option>Attempting to Contact</option>
+        <option>Connected</option><option>Qualified (S0)</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>Target product</label>
+      <select id="ea-product">
+        <option value="">—</option>
+        <option>Amplitude</option><option>Braze</option><option>Amplitude + Braze</option>
+      </select>
     </div>
     <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="closeAccountModal()">Cancelar</button>
-      <button class="btn-modal-save" onclick="saveAccount()">Salvar</button>
+      <button class="btn-mdel" onclick="deleteAccount()" title="Delete account">🗑</button>
+      <button class="btn-mcancel" onclick="closeModal('modal-edit-account')">Cancel</button>
+      <button class="btn-msave" onclick="saveAccountEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL — pessoa -->
+<div class="modal-bg" id="modal-person">
+  <div class="modal">
+    <h2 id="mp-title">Add person</h2>
+    <div class="modal-field"><label>Name</label><input id="mp-name" type="text" placeholder="Full name"></div>
+    <div class="modal-field"><label>Title</label><input id="mp-role" type="text" placeholder="e.g. CFO, Head of Growth"></div>
+    <div class="modal-field">
+      <label>LinkedIn</label>
+      <div class="input-icon-wrap">
+        <svg class="i-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        <input id="mp-linkedin" type="url" placeholder="https://linkedin.com/in/...">
+      </div>
+    </div>
+    <div class="modal-field"><label>Initials</label><input id="mp-initials" type="text" maxlength="3" placeholder="e.g. VS"></div>
+    <div class="modal-field"><label>Internal note</label><input id="mp-note" type="text" placeholder="e.g. Close to the CEO"></div>
+    <div class="modal-field"><label>Buying role</label><div class="label-grid" id="mp-labels"></div></div>
+    <div class="modal-field"><label>Reports to</label><select id="mp-parent"><option value="">— top —</option></select></div>
+    <div class="modal-actions">
+      <button class="btn-mdel" id="mp-del" onclick="deletePerson()" title="Remover">🗑</button>
+      <button class="btn-mcancel" onclick="closeModal('modal-person')">Cancel</button>
+      <button class="btn-msave" onclick="savePerson()">Save</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="export-overlay" id="export-overlay">
+  <p>Generating image...</p>
+</div>
 
 <script>
-const MASTER_PASSWORD = 'minders2026';
-const ALLOWED_DOMAIN  = 'minders.io';
-const STORAGE_KEY     = 'minders_stakeholder_v2';
+// ══════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════
+const MASTER_PW     = 'minders2026';
+const ALLOWED_DOM   = 'minders.io';
+const HUB_KEY       = 'minders_hub_v1';
+const REGIONS       = ['BR','NOLA','SOLA','IBERIA'];
+const BDRS          = ['Floresta','Mari','Ale','Anita','Karli','Nacho'];
+const REGION_COLORS = { BR:'mint', NOLA:'lav', SOLA:'cyan', IBERIA:'pink' };
 
 const LABELS = [
-  {id:'champion',  label:'Champion',      color:'#00e5a0'},
-  {id:'blocker',   label:'Blocker',       color:'#ff4d6d'},
-  {id:'eco_buyer', label:'Economic Buyer',color:'#7c6ef7'},
-  {id:'budget',    label:'Budget Owner',  color:'#f59e0b'},
-  {id:'decision',  label:'Decision Maker',color:'#3b9eff'},
-  {id:'influencer',label:'Influencer',    color:'#f472b6'},
-  {id:'user',      label:'User',          color:'#34d399'},
-  {id:'coach',     label:'Coach',         color:'#fb923c'},
+  {id:'champion',  label:'Champion',      color:'#b1fbae'},
+  {id:'blocker',   label:'Blocker',       color:'#fc7e7f'},
+  {id:'eco_buyer', label:'Economic Buyer',color:'#8799fb'},
+  {id:'budget',    label:'Budget Owner',  color:'#fc9edc'},
+  {id:'decision',  label:'Decision Maker',color:'#a4f1fb'},
+  {id:'influencer',label:'Influencer',    color:'#f0d080'},
+  {id:'user',      label:'User',          color:'#f2f2f2'},
+  {id:'coach',     label:'Coach',         color:'#fc9edc'},
 ];
 
-let state = { account:{name:'',segment:'',territory:'',bdr:'',stage:'',product:''}, people:[] };
-let editingPersonId = null;
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+// hub: { accounts: { [id]: { id, name, segment, region, bdr, stage, product, people:[] } } }
+let hub = { accounts:{} };
+let currentAccountId = null;
+let editingPersonId  = null;
+let hubFilter        = 'ALL'; // region filter
 
-// ── DRAG STATE ───────────────────────────────────────
-let dragId       = null;
-let dragOverId   = null;
-let dragZone     = null; // 'above' | 'below' | 'side'
+let dragId=null, dragOverId=null, dragZone=null;
 
-// ── PERSIST ──────────────────────────────────────────
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function load(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(raw){ try{ state = JSON.parse(raw); }catch(e){} }
+// ══════════════════════════════════════
+// PERSIST
+// ══════════════════════════════════════
+function saveHub(){ localStorage.setItem(HUB_KEY, JSON.stringify(hub)); }
+function loadHub(){
+  const r = localStorage.getItem(HUB_KEY);
+  if(r){ try{ hub=JSON.parse(r); }catch(e){} }
 }
 
-// ── LOGIN ────────────────────────────────────────────
+function curAccount(){ return hub.accounts[currentAccountId]; }
+function curPeople(){ return curAccount()?.people || []; }
+
+// ══════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════
 function doLogin(){
   const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const pass  = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-error');
-  if(!email.endsWith('@'+ALLOWED_DOMAIN)){ errEl.textContent='Só emails @minders.io têm acesso.'; return; }
-  if(pass !== MASTER_PASSWORD){ errEl.textContent='Senha incorreta.'; return; }
+  const pw    = document.getElementById('login-pw').value;
+  const err   = document.getElementById('login-err');
+  if(!email.endsWith('@'+ALLOWED_DOM)){ err.textContent='Only @minders.io emails are allowed.'; return; }
+  if(pw!==MASTER_PW){ err.textContent='Incorrect password.'; return; }
   sessionStorage.setItem('minders_auth','1');
-  errEl.textContent='';
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').classList.add('visible');
-  load(); renderAll();
+  err.textContent='';
+  loadHub();
+  showScreen('s-hub');
+  renderHub();
 }
 function doLogout(){
   sessionStorage.removeItem('minders_auth');
-  document.getElementById('app').classList.remove('visible');
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('login-password').value='';
+  showScreen('s-login');
 }
-document.getElementById('login-password').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('login-pw').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
 if(sessionStorage.getItem('minders_auth')==='1'){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').classList.add('visible');
-  load(); setTimeout(renderAll,0);
+  loadHub(); showScreen('s-hub'); setTimeout(renderHub,0);
 }
 
-// ── RENDER ALL ───────────────────────────────────────
-function renderAll(){ renderTopbar(); renderMeta(); renderLegend(); renderTree(); }
+// ══════════════════════════════════════
+// SCREEN NAV
+// ══════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active');
+    s.style.display='none';
+  });
+  const el=document.getElementById(id);
+  el.style.display='flex';
+  el.classList.add('active');
+}
+function goHub(){ showScreen('s-hub'); renderHub(); }
 
-function renderTopbar(){
-  const n = state.account.name||'Nova conta';
-  const bdr = state.account.bdr ? ` · ${state.account.bdr}` : '';
-  document.getElementById('topbar-account-name').innerHTML=`${n}<span>${bdr}</span>`;
+// ══════════════════════════════════════
+// HUB RENDER
+// ══════════════════════════════════════
+function renderHub(){
+  // filter chips
+  const filterEl = document.getElementById('hub-filter');
+  filterEl.innerHTML = ['ALL',...REGIONS].map(r=>`
+    <button class="chip sm ${hubFilter===r?'active':''}" onclick="setFilter('${r}')">
+      ${r==='ALL'?'All':r}
+    </button>`).join('');
+
+  const accounts = Object.values(hub.accounts);
+  const body = document.getElementById('hub-body');
+  body.innerHTML='';
+
+  REGIONS.forEach(region=>{
+    if(hubFilter!=='ALL' && hubFilter!==region) return;
+
+    const regionAccounts = accounts.filter(a=>a.region===region);
+    const block = document.createElement('div');
+    block.className='region-block';
+
+    const rh = document.createElement('div');
+    rh.className='region-header';
+    rh.innerHTML=`
+      <span class="chip sm ${REGION_COLORS[region]}">${region}</span>
+      <span class="region-label">${regionName(region)}</span>
+      <span class="region-count">${regionAccounts.length} account${regionAccounts.length!==1?'s':''}</span>`;
+    block.appendChild(rh);
+
+    if(regionAccounts.length===0){
+      block.innerHTML+=`<div class="region-empty">No accounts in this region yet.</div>`;
+    } else {
+      // group by BDR
+      const byBdr = {};
+      regionAccounts.forEach(a=>{
+        const k = a.bdr||'Sem owner';
+        if(!byBdr[k]) byBdr[k]=[];
+        byBdr[k].push(a);
+      });
+
+      Object.entries(byBdr).forEach(([bdr,accs])=>{
+        const ownerSec = document.createElement('div');
+        ownerSec.className='owner-section';
+        ownerSec.innerHTML=`<div class="owner-label"><span class="owner-dot"></span>${bdr}</div>`;
+        const grid = document.createElement('div');
+        grid.className='accounts-grid';
+        accs.forEach(acc=>{
+          grid.appendChild(makeAccountCard(acc));
+        });
+        // add button per owner
+        const addBtn = document.createElement('div');
+        addBtn.className='account-card-add';
+        addBtn.innerHTML='<span style="font-size:18px">+</span> New account';
+        addBtn.onclick=()=>openNewAccountModal(region,bdr);
+        grid.appendChild(addBtn);
+        ownerSec.appendChild(grid);
+        block.appendChild(ownerSec);
+      });
+
+      // add button for new owner in this region
+      const newOwnerBtn = document.createElement('button');
+      newOwnerBtn.className='chip sm';
+      newOwnerBtn.style.marginTop='8px';
+      newOwnerBtn.textContent='+ Add account to region';
+      newOwnerBtn.onclick=()=>openNewAccountModal(region,'');
+      block.appendChild(newOwnerBtn);
+    }
+
+    if(regionAccounts.length===0){
+      const addBtn = document.createElement('div');
+      addBtn.className='account-card-add';
+      addBtn.style.maxWidth='220px';
+      addBtn.innerHTML='<span style="font-size:18px">+</span> New account';
+      addBtn.onclick=()=>openNewAccountModal(region,'');
+      block.appendChild(addBtn);
+    }
+
+    body.appendChild(block);
+  });
 }
 
-function renderMeta(){
-  const a=state.account;
+function setFilter(f){ hubFilter=f; renderHub(); }
+
+function regionName(r){
+  return {BR:'Brazil',NOLA:'North LATAM',SOLA:'South LATAM',IBERIA:'Iberia'}[r]||r;
+}
+
+function makeAccountCard(acc){
+  const card = document.createElement('div');
+  card.className=`account-card ${(acc.region||'').toLowerCase()}`;
+  const people = acc.people||[];
+  const labeled = people.filter(p=>(p.labels||[]).length>0);
+
+  card.innerHTML=`
+    <div class="ac-name">${acc.name||'Sem nome'}</div>
+    <div class="ac-segment">${acc.segment||'—'}</div>
+    <div class="ac-meta">
+      ${acc.stage?`<span class="chip sm">${acc.stage}</span>`:''}
+      ${acc.product?`<span class="chip sm">${acc.product}</span>`:''}
+    </div>
+    <div class="ac-people">${people.length} people · ${labeled.length} mapped</div>
+  `;
+  card.onclick=()=>openAccount(acc.id);
+  return card;
+}
+
+// ══════════════════════════════════════
+// ACCOUNT CRUD
+// ══════════════════════════════════════
+function openNewAccountModal(region='', bdr=''){
+  // reset form
+  document.getElementById('na-name').value='';
+  document.getElementById('na-segment').value='';
+  document.getElementById('na-bdr').value=bdr;
+  document.getElementById('na-product').value='';
+  // region
+  document.querySelectorAll('#na-region-grid .region-option').forEach(el=>{
+    el.classList.remove('sel');
+    const inp=el.querySelector('input');
+    inp.checked = inp.value===region;
+    if(inp.checked) el.classList.add('sel');
+  });
+  // radio listeners
+  document.querySelectorAll('#na-region-grid input[type=radio]').forEach(inp=>{
+    inp.onchange=()=>{
+      document.querySelectorAll('#na-region-grid .region-option').forEach(e=>e.classList.remove('sel'));
+      inp.closest('.region-option').classList.add('sel');
+    };
+  });
+  openModal('modal-new-account');
+  document.getElementById('na-name').focus();
+}
+
+function createAccount(){
+  const name=document.getElementById('na-name').value.trim();
+  if(!name){alert('Name is required');return;}
+  const region=document.querySelector('#na-region-grid input:checked')?.value||'';
+  const id=uid();
+  hub.accounts[id]={
+    id, name,
+    segment:document.getElementById('na-segment').value.trim(),
+    region,
+    bdr:document.getElementById('na-bdr').value,
+    product:document.getElementById('na-product').value,
+    stage:'Prospecting',
+    people:[]
+  };
+  saveHub();
+  closeModal('modal-new-account');
+  openAccount(id);
+}
+
+function openAccount(id){
+  currentAccountId=id;
+  showScreen('s-chart');
+  zoomLevel=1;
+  renderChart();
+}
+
+function openAccountEditModal(){
+  const a=curAccount(); if(!a) return;
+  document.getElementById('ea-name').value=a.name||'';
+  document.getElementById('ea-segment').value=a.segment||'';
+  document.getElementById('ea-bdr').value=a.bdr||'';
+  document.getElementById('ea-stage').value=a.stage||'';
+  document.getElementById('ea-product').value=a.product||'';
+  document.querySelectorAll('#ea-region-grid .region-option').forEach(el=>{
+    el.classList.remove('sel');
+    const inp=el.querySelector('input');
+    inp.checked=inp.value===a.region;
+    if(inp.checked) el.classList.add('sel');
+  });
+  document.querySelectorAll('#ea-region-grid input[type=radio]').forEach(inp=>{
+    inp.onchange=()=>{
+      document.querySelectorAll('#ea-region-grid .region-option').forEach(e=>e.classList.remove('sel'));
+      inp.closest('.region-option').classList.add('sel');
+    };
+  });
+  openModal('modal-edit-account');
+}
+
+function saveAccountEdit(){
+  const a=curAccount(); if(!a) return;
+  a.name=document.getElementById('ea-name').value.trim();
+  a.segment=document.getElementById('ea-segment').value.trim();
+  a.bdr=document.getElementById('ea-bdr').value;
+  a.stage=document.getElementById('ea-stage').value;
+  a.product=document.getElementById('ea-product').value;
+  a.region=document.querySelector('#ea-region-grid input:checked')?.value||a.region;
+  saveHub(); renderChart(); closeModal('modal-edit-account'); showToast('Account updated ✓');
+}
+
+function deleteAccount(){
+  if(!confirm('Delete this account and all data?')) return;
+  delete hub.accounts[currentAccountId];
+  saveHub(); closeModal('modal-edit-account'); goHub();
+}
+
+// ══════════════════════════════════════
+// CHART RENDER
+// ══════════════════════════════════════
+function renderChart(){
+  renderBreadcrumb();
+  renderMetabar();
+  renderLegend();
+  renderTree();
+}
+
+function renderBreadcrumb(){
+  const a=curAccount();
+  const rc=REGION_COLORS[a?.region]||'';
+  document.getElementById('topbar-bc').innerHTML=`
+    <span class="chip sm" onclick="goHub()">Hub</span>
+    ${a?.region?`<span class="chip sm ${rc}">${a.region}</span>`:''}
+    ${a?.bdr?`<span class="chip sm">${a.bdr}</span>`:''}
+    <span class="chip sm active">${a?.name||'—'}</span>
+  `;
+}
+
+function renderMetabar(){
+  const a=curAccount(); if(!a) return;
   const fields=[
-    {key:'segment',  label:a.segment   ||'+ Segmento'},
-    {key:'territory',label:a.territory ||'+ Território'},
-    {key:'stage',    label:a.stage     ||'+ Stage'},
-    {key:'product',  label:a.product   ||'+ Produto'},
+    {k:'segment', v:a.segment||'+ Segment'},
+    {k:'stage',   v:a.stage  ||'+ Stage'},
+    {k:'product', v:a.product||'+ Product'},
   ];
-  document.getElementById('account-meta-bar').innerHTML=
-    fields.map(f=>`<div class="meta-pill ${a[f.key]?'set':''}" onclick="openAccountModal()">${f.label}</div>`).join('');
+  document.getElementById('chart-metabar').innerHTML=
+    fields.map(f=>`<span class="chip sm ${a[f.k]?'active':''}" onclick="openAccountEditModal()">${f.v}</span>`).join('');
 }
 
 function renderLegend(){
-  const used=new Set(state.people.flatMap(p=>p.labels||[]));
-  document.getElementById('legend').innerHTML= used.size===0 ? '' :
+  const used=new Set(curPeople().flatMap(p=>p.labels||[]));
+  document.getElementById('chart-legend').innerHTML=used.size===0?'':
     LABELS.filter(l=>used.has(l.id)).map(l=>`
       <div class="legend-item">
         <div class="legend-dot" style="background:${l.color}"></div>
@@ -357,75 +967,54 @@ function renderLegend(){
       </div>`).join('');
 }
 
-// ── TREE RENDER ──────────────────────────────────────
 function renderTree(){
   const container=document.getElementById('org-tree');
   container.innerHTML='';
+  const people=curPeople();
 
-  if(state.people.length===0){
+  if(people.length===0){
     container.innerHTML=`
       <div class="empty-state">
-        <h2>Nenhuma pessoa ainda</h2>
-        <p>Cole um JSON gerado pelo Claude acima, ou adicione manualmente.</p>
-        <button class="btn-primary" style="width:auto;padding:10px 24px;" onclick="openPersonModal(null,null)">+ Adicionar pessoa</button>
+        <h2>No people yet</h2>
+        <p>Paste a JSON from Claude above, or add people manually.</p>
+        <button class="btn-primary" style="width:auto;padding:11px 28px;" onclick="openPersonModal(null,null)">+ Add person</button>
       </div>`;
     document.getElementById('drag-hint').textContent='';
     return;
   }
+  document.getElementById('drag-hint').textContent='Drag cards to reorganize the hierarchy';
 
-  document.getElementById('drag-hint').textContent='Arraste os cards para reorganizar a hierarquia';
-
-  const roots=state.people.filter(p=>!p.parentId||p.parentId==='');
+  const roots=people.filter(p=>!p.parentId||p.parentId==='');
 
   function buildNode(person){
     const wrap=document.createElement('div');
     wrap.className='tree-node';
+    wrap.appendChild(makeCard(person));
 
-    const cardEl=makeCard(person);
-    wrap.appendChild(cardEl);
-
-    const children=state.people.filter(p=>p.parentId===person.id);
-
-    // add-child button + v-line connector
     const connWrap=document.createElement('div');
     connWrap.style.cssText='display:flex;flex-direction:column;align-items:center;';
-    const vShort=document.createElement('div');
-    vShort.className='v-line';
-    vShort.style.height='14px';
-    const addBtn=document.createElement('button');
-    addBtn.className='add-child-btn';
-    addBtn.title='Adicionar subordinado direto';
-    addBtn.textContent='+';
-    addBtn.onclick=()=>openPersonModal(null,person.id);
-    connWrap.appendChild(vShort);
-    connWrap.appendChild(addBtn);
+    const vs=document.createElement('div'); vs.className='v-line'; vs.style.height='14px';
+    const ab=document.createElement('button'); ab.className='add-child-btn';
+    ab.textContent='+'; ab.title='Add direct report';
+    ab.onclick=()=>openPersonModal(null,person.id);
+    connWrap.appendChild(vs); connWrap.appendChild(ab);
     wrap.appendChild(connWrap);
 
+    const children=people.filter(p=>p.parentId===person.id);
     if(children.length>0){
-      const vDown=document.createElement('div');
-      vDown.className='v-line';
-      vDown.style.height='18px';
-      wrap.appendChild(vDown);
-
-      const childrenWrap=document.createElement('div');
-      childrenWrap.className='children-wrap';
-
+      const vd=document.createElement('div'); vd.className='v-line'; vd.style.height='18px';
+      wrap.appendChild(vd);
+      const cw=document.createElement('div'); cw.className='children-wrap';
       if(children.length===1){
-        childrenWrap.appendChild(buildNode(children[0]));
+        cw.appendChild(buildNode(children[0]));
       } else {
-        const row=document.createElement('div');
-        row.className='children-row';
+        const row=document.createElement('div'); row.className='children-row';
         children.forEach(child=>{
-          const col=document.createElement('div');
-          col.className='child-col';
-          const vTop=document.createElement('div');
-          vTop.className='v-line';
-          vTop.style.height='20px';
-          col.appendChild(vTop);
-          col.appendChild(buildNode(child));
-          row.appendChild(col);
+          const col=document.createElement('div'); col.className='child-col';
+          const vt=document.createElement('div'); vt.className='v-line'; vt.style.height='20px';
+          col.appendChild(vt); col.appendChild(buildNode(child)); row.appendChild(col);
         });
-        childrenWrap.appendChild(row);
+        cw.appendChild(row);
         setTimeout(()=>{
           const cols=row.querySelectorAll(':scope > .child-col');
           if(cols.length<2) return;
@@ -434,323 +1023,327 @@ function renderTree(){
           const lr=cols[cols.length-1].getBoundingClientRect();
           const l=fr.left-rr.left+fr.width/2;
           const r=lr.left-rr.left+lr.width/2;
-          const hLine=document.createElement('div');
-          hLine.style.cssText=`position:absolute;top:0;left:${l}px;width:${r-l}px;height:2px;background:var(--border2);pointer-events:none;`;
-          row.appendChild(hLine);
+          const hl=document.createElement('div');
+          hl.style.cssText=`position:absolute;top:0;left:${l}px;width:${r-l}px;height:2px;background:rgba(242,242,242,.15);pointer-events:none;`;
+          row.appendChild(hl);
         },0);
       }
-      wrap.appendChild(childrenWrap);
+      wrap.appendChild(cw);
     }
-
     return wrap;
   }
 
-  const treeRoot=document.createElement('div');
-  treeRoot.className='tree-root';
-
+  const treeRoot=document.createElement('div'); treeRoot.className='tree-root';
   if(roots.length===1){
     treeRoot.appendChild(buildNode(roots[0]));
   } else {
-    const row=document.createElement('div');
-    row.className='children-row';
-    roots.forEach(r=>{
-      const col=document.createElement('div');
-      col.className='child-col';
-      col.appendChild(buildNode(r));
-      row.appendChild(col);
-    });
+    const row=document.createElement('div'); row.className='children-row';
+    roots.forEach(r=>{ const col=document.createElement('div'); col.className='child-col'; col.appendChild(buildNode(r)); row.appendChild(col); });
     treeRoot.appendChild(row);
   }
 
+  const globalAdd=document.createElement('div');
+  globalAdd.style.cssText='margin-top:32px;display:flex;justify-content:center;';
+  globalAdd.innerHTML=`<button class="chip" onclick="openPersonModal(null,null)">+ Add person</button>`;
+  treeRoot.appendChild(globalAdd);
   container.appendChild(treeRoot);
 }
 
-// ── CARD ─────────────────────────────────────────────
+// ══════════════════════════════════════
+// CARD
+// ══════════════════════════════════════
 function makeCard(person){
   const labels=person.labels||[];
   const card=document.createElement('div');
-  card.className='card';
-  card.dataset.id=person.id;
+  card.className='card'; card.dataset.id=person.id;
 
-  // accent border from first label
-  const firstLabel=LABELS.find(l=>labels.includes(l.id));
-  if(firstLabel){
-    card.style.borderLeftWidth='3px';
-    card.style.borderLeftStyle='solid';
-    card.style.borderLeftColor=firstLabel.color;
-  }
+  const fl=LABELS.find(l=>labels.includes(l.id));
+  if(fl){ card.style.borderLeftWidth='3px'; card.style.borderLeftStyle='solid'; card.style.borderLeftColor=fl.color; }
 
-  const initials=person.initials||person.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-
-  // avatar — link if linkedin available
-  const avatarTag = person.linkedin
-    ? `<a class="avatar" href="${person.linkedin}" target="_blank" rel="noopener" title="Abrir LinkedIn" draggable="false">${initials}</a>`
-    : `<div class="avatar">${initials}</div>`;
+  const ini=person.initials||person.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const avatarEl=person.linkedin
+    ?`<a class="avatar" href="${person.linkedin}" target="_blank" rel="noopener" draggable="false">${ini}</a>`
+    :`<div class="avatar">${ini}</div>`;
 
   const labelTags=LABELS.filter(l=>labels.includes(l.id))
-    .map(l=>`<span class="label-tag" style="background:${l.color}22;color:${l.color}">${l.label}</span>`)
-    .join('');
+    .map(l=>`<span class="label-tag" style="background:${l.color}22;color:${l.color}">${l.label}</span>`).join('');
 
-  const linkedinRow = person.linkedin
-    ? `<a class="card-linkedin" href="${person.linkedin}" target="_blank" rel="noopener" draggable="false">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
-        linkedin
-      </a>`
-    : '';
+  const liSearch=`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(person.name)}`;
+  const liRow=person.linkedin
+    ?`<a class="card-linkedin" href="${person.linkedin}" target="_blank" rel="noopener" draggable="false">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        linkedin</a>`
+    :`<a class="card-linkedin" style="opacity:.5;font-style:italic;" href="${liSearch}" target="_blank" rel="noopener" draggable="false">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        search on LinkedIn</a>`;
 
   card.innerHTML=`
     <div class="card-top">
-      ${avatarTag}
+      ${avatarEl}
       <div class="card-info">
         <div class="card-name">${person.name}</div>
         <div class="card-role">${person.role||''}</div>
-        ${labelTags ? `<div class="card-labels">${labelTags}</div>` : ''}
+        ${labelTags?`<div class="card-labels">${labelTags}</div>`:''}
       </div>
     </div>
-    ${person.note ? `<div class="card-note">${person.note}</div>` : ''}
-    ${linkedinRow}
-  `;
+    ${person.note?`<div class="card-note">${person.note}</div>`:''}
+    ${liRow}`;
 
-  // click to edit (not on links)
-  card.addEventListener('click', e=>{
-    if(e.target.closest('a')) return;
-    openPersonModal(person.id, person.parentId);
-  });
+  card.addEventListener('click',e=>{ if(e.target.closest('a'))return; openPersonModal(person.id,person.parentId); });
 
-  // ── DRAG ──
+  // drag
   card.draggable=true;
-
-  card.addEventListener('dragstart', e=>{
-    dragId=person.id;
-    card.classList.add('dragging');
-    e.dataTransfer.effectAllowed='move';
-    e.dataTransfer.setData('text/plain', person.id);
-  });
-
-  card.addEventListener('dragend', ()=>{
-    dragId=null; dragOverId=null; dragZone=null;
-    card.classList.remove('dragging');
-    clearDragStyles();
-  });
-
-  card.addEventListener('dragover', e=>{
-    if(dragId===person.id) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect='move';
-
+  card.addEventListener('dragstart',e=>{ dragId=person.id; card.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+  card.addEventListener('dragend',()=>{ dragId=null; dragOverId=null; dragZone=null; card.classList.remove('dragging'); clearDragStyles(); });
+  card.addEventListener('dragover',e=>{
+    if(dragId===person.id)return; e.preventDefault();
     const rect=card.getBoundingClientRect();
-    const y=e.clientY-rect.top;
-    const h=rect.height;
-    let zone;
-    if(y < h*0.3)       zone='above';
-    else if(y > h*0.7)  zone='below';
-    else                  zone='side';
-
-    if(dragOverId!==person.id || dragZone!==zone){
-      dragOverId=person.id; dragZone=zone;
-      clearDragStyles();
-      if(zone==='above')      card.classList.add('drag-over-above');
-      else if(zone==='below') card.classList.add('drag-over-below');
-      else                    card.classList.add('drag-over-side');
+    const y=e.clientY-rect.top; const h=rect.height;
+    let zone= y<h*.3?'above': y>h*.7?'below':'side';
+    if(dragOverId!==person.id||dragZone!==zone){
+      dragOverId=person.id; dragZone=zone; clearDragStyles();
+      card.classList.add(`drag-over-${zone==='above'?'above':zone==='below'?'below':'side'}`);
     }
   });
-
-  card.addEventListener('dragleave', ()=>{
-    card.classList.remove('drag-over-above','drag-over-below','drag-over-side');
-    if(dragOverId===person.id){ dragOverId=null; dragZone=null; }
-  });
-
-  card.addEventListener('drop', e=>{
+  card.addEventListener('dragleave',()=>{ card.classList.remove('drag-over-above','drag-over-below','drag-over-side'); if(dragOverId===person.id){dragOverId=null;dragZone=null;} });
+  card.addEventListener('drop',e=>{
     e.preventDefault();
-    if(!dragId || dragId===person.id) return;
-    const src=state.people.find(p=>p.id===dragId);
-    const tgt=state.people.find(p=>p.id===person.id);
-    if(!src||!tgt) return;
-
-    // prevent dropping onto own descendant
-    if(isDescendant(tgt.id, src.id)){ showToast('Não é possível mover para um subordinado'); return; }
-
-    if(dragZone==='below'){
-      // src becomes direct child of tgt
-      src.parentId=tgt.id;
-    } else if(dragZone==='above'){
-      // src becomes sibling of tgt (same parent)
-      src.parentId=tgt.parentId||'';
-    } else {
-      // side: swap positions (same level — swap parentIds if same parent, else move to same parent)
-      const srcParent=src.parentId||'';
-      const tgtParent=tgt.parentId||'';
-      if(srcParent===tgtParent){
-        // reorder within same level — just ensure same parent
-        src.parentId=tgtParent;
-      } else {
-        src.parentId=tgtParent;
-      }
-    }
-
-    save(); renderAll();
-    clearDragStyles();
-    showToast('Hierarquia atualizada ✓');
+    if(!dragId||dragId===person.id)return;
+    const people=curAccount().people;
+    const src=people.find(p=>p.id===dragId);
+    const tgt=people.find(p=>p.id===person.id);
+    if(!src||!tgt)return;
+    if(isDescendant(tgt.id,src.id)){ showToast("Can't move to a subordinate"); return; }
+    src.parentId = dragZone==='below' ? tgt.id : (tgt.parentId||'');
+    saveHub(); renderTree(); clearDragStyles(); showToast('Reorganized ✓');
   });
-
   return card;
 }
 
-function clearDragStyles(){
-  document.querySelectorAll('.card').forEach(c=>{
-    c.classList.remove('drag-over-above','drag-over-below','drag-over-side');
-  });
-}
-
-function isDescendant(candidateId, ancestorId){
-  // returns true if candidateId is a descendant of ancestorId
-  let cur=state.people.find(p=>p.id===candidateId);
-  while(cur && cur.parentId){
-    if(cur.parentId===ancestorId) return true;
-    cur=state.people.find(p=>p.id===cur.parentId);
-  }
+function clearDragStyles(){ document.querySelectorAll('.card').forEach(c=>c.classList.remove('drag-over-above','drag-over-below','drag-over-side')); }
+function isDescendant(candidateId,ancestorId){
+  const people=curPeople();
+  let cur=people.find(p=>p.id===candidateId);
+  while(cur&&cur.parentId){ if(cur.parentId===ancestorId)return true; cur=people.find(p=>p.id===cur.parentId); }
   return false;
 }
 
-// ── PERSON MODAL ─────────────────────────────────────
-function openPersonModal(personId, defaultParentId){
+// ══════════════════════════════════════
+// PERSON MODAL
+// ══════════════════════════════════════
+function openPersonModal(personId,defaultParentId){
   editingPersonId=personId;
-  const person=personId ? state.people.find(p=>p.id===personId) : null;
-  document.getElementById('modal-title').textContent=person?'Editar pessoa':'Adicionar pessoa';
-  document.getElementById('m-name').value    =person?.name||'';
-  document.getElementById('m-role').value    =person?.role||'';
-  document.getElementById('m-linkedin').value=person?.linkedin||'';
-  document.getElementById('m-initials').value=person?.initials||'';
-  document.getElementById('m-note').value    =person?.note||'';
+  const person=personId?curPeople().find(p=>p.id===personId):null;
+  document.getElementById('mp-title').textContent=person?'Edit person':'Add person';
+  document.getElementById('mp-name').value=person?.name||'';
+  document.getElementById('mp-role').value=person?.role||'';
+  document.getElementById('mp-linkedin').value=person?.linkedin||'';
+  document.getElementById('mp-initials').value=person?.initials||'';
+  document.getElementById('mp-note').value=person?.note||'';
 
-  // labels
-  const grid=document.getElementById('label-grid');
+  const grid=document.getElementById('mp-labels');
   grid.innerHTML=LABELS.map(l=>`
     <label class="label-toggle ${(person?.labels||[]).includes(l.id)?'active':''}"
-           style="${(person?.labels||[]).includes(l.id)?`background:${l.color}18;border-color:${l.color};`:''}"
-           data-id="${l.id}" data-color="${l.color}">
+           style="${(person?.labels||[]).includes(l.id)?`background:${l.color}22;border-color:${l.color};`:''}"
+           data-color="${l.color}">
       <input type="checkbox" value="${l.id}" ${(person?.labels||[]).includes(l.id)?'checked':''}>
       <span class="dot" style="background:${l.color}"></span>${l.label}
     </label>`).join('');
   grid.querySelectorAll('.label-toggle').forEach(el=>{
     el.addEventListener('click',()=>{
-      const cb=el.querySelector('input');
-      cb.checked=!cb.checked;
-      const color=el.dataset.color;
-      if(cb.checked){el.classList.add('active');el.style.background=color+'18';el.style.borderColor=color;}
+      const cb=el.querySelector('input'); cb.checked=!cb.checked;
+      const c=el.dataset.color;
+      if(cb.checked){el.classList.add('active');el.style.background=c+'22';el.style.borderColor=c;}
       else{el.classList.remove('active');el.style.background='';el.style.borderColor='';}
     });
   });
 
-  // parent select
-  const sel=document.getElementById('m-parent');
-  sel.innerHTML='<option value="">— topo da hierarquia —</option>';
-  state.people.filter(p=>p.id!==personId).forEach(p=>{
+  const sel=document.getElementById('mp-parent');
+  sel.innerHTML='<option value="">— top of hierarchy —</option>';
+  curPeople().filter(p=>p.id!==personId).forEach(p=>{
     const opt=document.createElement('option');
-    opt.value=p.id;
-    opt.textContent=p.name+(p.role?` (${p.role})`:'');
+    opt.value=p.id; opt.textContent=p.name+(p.role?` (${p.role})`:'');
     if((person?.parentId===p.id)||(!person&&defaultParentId===p.id)) opt.selected=true;
     sel.appendChild(opt);
   });
 
-  document.getElementById('modal-delete-btn').style.display=person?'block':'none';
-  document.getElementById('person-modal').classList.add('open');
-  document.getElementById('m-name').focus();
+  document.getElementById('mp-del').style.display=person?'block':'none';
+  openModal('modal-person');
+  document.getElementById('mp-name').focus();
 }
 
-function closePersonModal(){ document.getElementById('person-modal').classList.remove('open'); editingPersonId=null; }
-
 function savePerson(){
-  const name=document.getElementById('m-name').value.trim();
-  if(!name){alert('Nome obrigatório');return;}
-  const role    =document.getElementById('m-role').value.trim();
-  const linkedin=document.getElementById('m-linkedin').value.trim();
-  const initials=document.getElementById('m-initials').value.trim().toUpperCase();
-  const note    =document.getElementById('m-note').value.trim();
-  const parentId=document.getElementById('m-parent').value;
-  const labels  =[...document.querySelectorAll('#label-grid input:checked')].map(cb=>cb.value);
-
+  const name=document.getElementById('mp-name').value.trim();
+  if(!name){alert('Name is required');return;}
+  const obj={
+    name, role:document.getElementById('mp-role').value.trim(),
+    linkedin:document.getElementById('mp-linkedin').value.trim(),
+    initials:document.getElementById('mp-initials').value.trim().toUpperCase(),
+    note:document.getElementById('mp-note').value.trim(),
+    parentId:document.getElementById('mp-parent').value,
+    labels:[...document.querySelectorAll('#mp-labels input:checked')].map(cb=>cb.value)
+  };
+  const people=curAccount().people;
   if(editingPersonId){
-    const idx=state.people.findIndex(p=>p.id===editingPersonId);
-    state.people[idx]={...state.people[idx],name,role,linkedin,initials,note,parentId,labels};
+    const idx=people.findIndex(p=>p.id===editingPersonId);
+    people[idx]={...people[idx],...obj};
   } else {
-    state.people.push({id:uid(),name,role,linkedin,initials,note,parentId,labels});
+    people.push({id:uid(),...obj});
   }
-  save(); renderAll(); closePersonModal(); showToast('Salvo ✓');
+  saveHub(); renderChart(); closeModal('modal-person'); showToast('Saved ✓');
 }
 
 function deletePerson(){
-  if(!editingPersonId) return;
-  if(!confirm('Remover esta pessoa?')) return;
-  const person=state.people.find(p=>p.id===editingPersonId);
-  state.people=state.people.filter(p=>p.id!==editingPersonId);
-  state.people.forEach(p=>{ if(p.parentId===editingPersonId) p.parentId=person?.parentId||''; });
-  save(); renderAll(); closePersonModal(); showToast('Removido');
+  if(!editingPersonId)return;
+  if(!confirm('Remove this person?'))return;
+  const person=curPeople().find(p=>p.id===editingPersonId);
+  curAccount().people=curPeople().filter(p=>p.id!==editingPersonId);
+  curPeople().forEach(p=>{ if(p.parentId===editingPersonId) p.parentId=person?.parentId||''; });
+  saveHub(); renderChart(); closeModal('modal-person'); showToast('Removed');
 }
 
-// ── ACCOUNT MODAL ────────────────────────────────────
-function openAccountModal(){
-  const a=state.account;
-  document.getElementById('am-name').value     =a.name||'';
-  document.getElementById('am-segment').value  =a.segment||'';
-  document.getElementById('am-territory').value=a.territory||'';
-  document.getElementById('am-bdr').value      =a.bdr||'';
-  document.getElementById('am-stage').value    =a.stage||'';
-  document.getElementById('am-product').value  =a.product||'';
-  document.getElementById('account-modal').classList.add('open');
-}
-function closeAccountModal(){ document.getElementById('account-modal').classList.remove('open'); }
-function saveAccount(){
-  state.account={
-    name:     document.getElementById('am-name').value.trim(),
-    segment:  document.getElementById('am-segment').value.trim(),
-    territory:document.getElementById('am-territory').value,
-    bdr:      document.getElementById('am-bdr').value.trim(),
-    stage:    document.getElementById('am-stage').value,
-    product:  document.getElementById('am-product').value,
-  };
-  save(); renderAll(); closeAccountModal(); showToast('Conta atualizada ✓');
-}
-
-// ── IMPORT ───────────────────────────────────────────
+// ══════════════════════════════════════
+// IMPORT / EXPORT
+// ══════════════════════════════════════
 function doImport(){
-  const raw=document.getElementById('import-textarea').value.trim();
-  if(!raw) return;
+  const raw=document.getElementById('import-ta').value.trim(); if(!raw)return;
   try{
-    const imported=JSON.parse(raw);
-    if(imported.account) state.account={...state.account,...imported.account};
-    if(imported.people&&Array.isArray(imported.people)){
-      imported.people.forEach(p=>{ if(!p.id)p.id=uid(); if(!p.labels)p.labels=[]; if(!p.linkedin)p.linkedin=''; });
-      state.people=imported.people;
+    const imp=JSON.parse(raw);
+    const a=curAccount();
+    if(imp.account){ Object.assign(a, imp.account); a.id=currentAccountId; }
+    if(imp.people&&Array.isArray(imp.people)){
+      imp.people.forEach(p=>{ if(!p.id)p.id=uid(); if(!p.labels)p.labels=[]; if(!p.linkedin)p.linkedin=''; });
+      a.people=imp.people;
     }
-    save(); renderAll();
-    document.getElementById('import-textarea').value='';
+    saveHub(); renderChart();
+    document.getElementById('import-ta').value='';
     document.getElementById('import-panel').removeAttribute('open');
-    showToast('Importado com sucesso ✓');
-  } catch(e){ alert('JSON inválido.\n\n'+e.message); }
+    showToast('Imported ✓');
+  } catch(e){ alert('Invalid JSON.\n\n'+e.message); }
 }
 
-// ── EXPORT ───────────────────────────────────────────
 function exportJSON(){
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=(state.account.name||'stakeholder')+'.json';
-  a.click();
+  const a=curAccount(); if(!a)return;
+  const blob=new Blob([JSON.stringify({account:a,people:a.people},null,2)],{type:'application/json'});
+  const el=document.createElement('a');
+  el.href=URL.createObjectURL(blob);
+  el.download=(a.name||'account').replace(/\s+/g,'-').toLowerCase()+'.json';
+  el.click();
 }
 
-// ── UTILS ────────────────────────────────────────────
+function exportImage(){
+  const overlay=document.getElementById('export-overlay');
+  overlay.classList.add('open');
+  const tree=document.getElementById('org-tree');
+  const chartCanvas=document.querySelector('.chart-canvas');
+
+  // Save original styles
+  const origTransform=tree.style.transform;
+  const origTransformOrigin=tree.style.transformOrigin;
+  const origOverflow=chartCanvas.style.overflow;
+  const origWidth=tree.style.width;
+  const origMinWidth=tree.style.minWidth;
+
+  // Measure full natural size (no clipping)
+  tree.style.transform='none';
+  tree.style.transformOrigin='top left';
+  chartCanvas.style.overflow='visible';
+  tree.style.width='max-content';
+  tree.style.minWidth='unset';
+
+  // Let browser reflow
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const fullW=tree.scrollWidth+80;
+      const fullH=tree.scrollHeight+80;
+
+      html2canvas(tree,{
+        backgroundColor:'#1c1f24',
+        scale:2,
+        useCORS:true,
+        logging:false,
+        width:fullW,
+        height:fullH,
+        windowWidth:fullW+200,
+        scrollX:0,
+        scrollY:0,
+        onclone:(doc)=>{
+          // In the clone, ensure no overflow clipping
+          doc.querySelector('.chart-canvas').style.overflow='visible';
+          doc.querySelector('#org-tree').style.width='max-content';
+        }
+      }).then(canvas=>{
+        // Restore
+        tree.style.transform=origTransform;
+        tree.style.transformOrigin=origTransformOrigin;
+        chartCanvas.style.overflow=origOverflow;
+        tree.style.width=origWidth;
+        tree.style.minWidth=origMinWidth;
+        overlay.classList.remove('open');
+
+        const a=document.createElement('a');
+        const accName=(curAccount()?.name||'orgchart').replace(/\s+/g,'-').toLowerCase();
+        a.download=`${accName}-orgchart.png`;
+        a.href=canvas.toDataURL('image/png');
+        a.click();
+        showToast('Image exported ✓');
+      }).catch((e)=>{
+        tree.style.transform=origTransform;
+        chartCanvas.style.overflow=origOverflow;
+        tree.style.width=origWidth;
+        overlay.classList.remove('open');
+        showToast('Export error');
+      });
+    });
+  });
+}
+
+// ══════════════════════════════════════
+// MODAL HELPERS
+// ══════════════════════════════════════
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('open'); });
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open'));
+});
+
+// ══════════════════════════════════════
+// ZOOM
+// ══════════════════════════════════════
+let zoomLevel = 1;
+const ZOOM_STEP = 0.15;
+const ZOOM_MIN  = 0.3;
+const ZOOM_MAX  = 1.5;
+
+function applyZoom(){
+  const tree=document.getElementById('org-tree');
+  tree.style.transform=`scale(${zoomLevel})`;
+  tree.style.transformOrigin='top center';
+  document.getElementById('zoom-label').textContent=Math.round(zoomLevel*100)+'%';
+}
+function zoomIn(){
+  zoomLevel=Math.min(ZOOM_MAX, +(zoomLevel+ZOOM_STEP).toFixed(2));
+  applyZoom();
+}
+function zoomOut(){
+  zoomLevel=Math.max(ZOOM_MIN, +(zoomLevel-ZOOM_STEP).toFixed(2));
+  applyZoom();
+}
+function resetZoom(){ zoomLevel=1; applyZoom(); }
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
 function uid(){ return Math.random().toString(36).slice(2,10); }
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2200);
 }
-
-// close modals
-document.getElementById('person-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('person-modal')) closePersonModal(); });
-document.getElementById('account-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('account-modal')) closeAccountModal(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closePersonModal();closeAccountModal();} });
 </script>
 </body>
 </html>
