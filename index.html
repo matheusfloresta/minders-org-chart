@@ -544,15 +544,7 @@ a.avatar:hover{ border-color:var(--m-lav); }
     </div>
     <div class="modal-field">
       <label>BDR Owner</label>
-      <select id="na-bdr">
-        <option value="">— select —</option>
-        <option>Floresta</option>
-        <option>Mari</option>
-        <option>Ale</option>
-        <option>Anita</option>
-        <option>Karli</option>
-        <option>Nacho</option>
-      </select>
+      <input id="na-bdr" type="text" placeholder="e.g. Floresta, Mari, Nacho">
     </div>
     <div class="modal-field">
       <label>Target product</label>
@@ -585,12 +577,9 @@ a.avatar:hover{ border-color:var(--m-lav); }
         <label class="region-option iberia"><input type="radio" name="ea-region" value="IBERIA"> IBERIA</label>
       </div>
     </div>
-    <div class="modal-field"><label>BDR Owner</label>
-      <select id="ea-bdr">
-        <option value="">— select —</option>
-        <option>Floresta</option><option>Mari</option><option>Ale</option>
-        <option>Anita</option><option>Karli</option><option>Nacho</option>
-      </select>
+    <div class="modal-field">
+      <label>BDR Owner</label>
+      <input id="ea-bdr" type="text" placeholder="e.g. Floresta, Mari, Nacho">
     </div>
     <div class="modal-field"><label>Stage</label>
       <select id="ea-stage">
@@ -1234,68 +1223,66 @@ function exportJSON(){
 function exportImage(){
   const overlay=document.getElementById('export-overlay');
   overlay.classList.add('open');
-  const tree=document.getElementById('org-tree');
-  const chartCanvas=document.querySelector('.chart-canvas');
 
-  // Save original styles
-  const origTransform=tree.style.transform;
-  const origTransformOrigin=tree.style.transformOrigin;
-  const origOverflow=chartCanvas.style.overflow;
-  const origWidth=tree.style.width;
-  const origMinWidth=tree.style.minWidth;
+  const people=curPeople();
+  const acct=curAccount();
 
-  // Measure full natural size (no clipping)
-  tree.style.transform='none';
-  tree.style.transformOrigin='top left';
-  chartCanvas.style.overflow='visible';
-  tree.style.width='max-content';
-  tree.style.minWidth='unset';
+  // Build a full-size offscreen clone of the tree
+  const offscreen=document.createElement('div');
+  offscreen.style.cssText=[
+    'position:fixed',
+    'top:-99999px',
+    'left:-99999px',
+    'background:#1c1f24',
+    'padding:40px',
+    'width:max-content',
+    'min-width:800px',
+    'z-index:-1',
+    'font-family:Archivo Black,Arial Black,sans-serif',
+  ].join(';');
+  document.body.appendChild(offscreen);
 
-  // Let browser reflow
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      const fullW=tree.scrollWidth+80;
-      const fullH=tree.scrollHeight+80;
+  // Re-render tree into offscreen div
+  const tempContainer=document.createElement('div');
+  tempContainer.id='org-tree-export';
+  offscreen.appendChild(tempContainer);
 
-      html2canvas(tree,{
-        backgroundColor:'#1c1f24',
-        scale:2,
-        useCORS:true,
-        logging:false,
-        width:fullW,
-        height:fullH,
-        windowWidth:fullW+200,
-        scrollX:0,
-        scrollY:0,
-        onclone:(doc)=>{
-          // In the clone, ensure no overflow clipping
-          doc.querySelector('.chart-canvas').style.overflow='visible';
-          doc.querySelector('#org-tree').style.width='max-content';
-        }
-      }).then(canvas=>{
-        // Restore
-        tree.style.transform=origTransform;
-        tree.style.transformOrigin=origTransformOrigin;
-        chartCanvas.style.overflow=origOverflow;
-        tree.style.width=origWidth;
-        tree.style.minWidth=origMinWidth;
-        overlay.classList.remove('open');
+  // Swap render target temporarily
+  const realTree=document.getElementById('org-tree');
+  const realContent=realTree.innerHTML;
+  realTree.id='org-tree-hidden';
+  tempContainer.id='org-tree';
+  renderTree();
+  tempContainer.id='org-tree-export';
+  realTree.id='org-tree';
+  realTree.innerHTML=realContent;
+  // restore event listeners
+  renderTree();
 
-        const a=document.createElement('a');
-        const accName=(curAccount()?.name||'orgchart').replace(/\s+/g,'-').toLowerCase();
-        a.download=`${accName}-orgchart.png`;
-        a.href=canvas.toDataURL('image/png');
-        a.click();
-        showToast('Image exported ✓');
-      }).catch((e)=>{
-        tree.style.transform=origTransform;
-        chartCanvas.style.overflow=origOverflow;
-        tree.style.width=origWidth;
-        overlay.classList.remove('open');
-        showToast('Export error');
-      });
+  setTimeout(()=>{
+    html2canvas(offscreen,{
+      backgroundColor:'#1c1f24',
+      scale:2,
+      useCORS:true,
+      logging:false,
+      width:offscreen.scrollWidth,
+      height:offscreen.scrollHeight,
+      windowWidth:offscreen.scrollWidth+100,
+    }).then(canvas=>{
+      document.body.removeChild(offscreen);
+      overlay.classList.remove('open');
+      const a=document.createElement('a');
+      const name=(acct?.name||'orgchart').replace(/\s+/g,'-').toLowerCase();
+      a.download=`${name}-orgchart.png`;
+      a.href=canvas.toDataURL('image/png');
+      a.click();
+      showToast('Image exported ✓');
+    }).catch(e=>{
+      document.body.removeChild(offscreen);
+      overlay.classList.remove('open');
+      showToast('Export error: '+e.message);
     });
-  });
+  },400);
 }
 
 // ══════════════════════════════════════
