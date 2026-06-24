@@ -365,14 +365,17 @@ let dragId=null, dragOverId=null, dragZone=null;
 
 // ── SUPABASE HELPERS ─────────────────────────────────
 async function sb(path, opts={}) {
-  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
-    headers: {
-      'apikey': SB_KEY,
-      'Authorization': `Bearer ${SB_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': opts.prefer || 'return=representation',
-      ...opts.headers
-    },
+  const headers = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+  };
+  if (opts.prefer) headers['Prefer'] = opts.prefer;
+  if (opts.method && opts.method !== 'GET' && opts.method !== 'DELETE') {
+    headers['Prefer'] = opts.prefer || 'return=representation';
+  }
+  const res = await fetch(SB_URL + '/rest/v1/' + path, {
+    headers,
     method: opts.method || 'GET',
     body: opts.body ? JSON.stringify(opts.body) : undefined
   });
@@ -420,7 +423,7 @@ async function init() {
 async function loadHub() {
   document.getElementById('loading-screen').classList.remove('hidden');
   try {
-    allAccounts = await sb('accounts?select=*&order=created_at.asc') || [];
+    allAccounts = await sb('accounts?select=*') || [];
     document.getElementById('user-chip').textContent = currentUser.split('@')[0] + ' · Sign out';
     document.getElementById('loading-screen').classList.add('hidden');
     showScreen('s-hub');
@@ -512,7 +515,7 @@ function makeAccountCard(acc) {
     <div class="ac-people" id="count-${acc.id}">Loading...</div>`;
   card.onclick=()=>openAccount(acc);
   // load people count
-  sb(`people?account_id=eq.${acc.id}&select=id`).then(p=>{
+  sb('people?account_id=eq.' + acc.id + '&select=id').then(p=>{
     const el=document.getElementById(`count-${acc.id}`);
     if(el) el.textContent=`${(p||[]).length} people`;
   }).catch(()=>{});
@@ -563,7 +566,7 @@ async function openAccount(acc) {
   currentAccount=acc;
   document.getElementById('loading-screen').classList.remove('hidden');
   try {
-    currentPeople = await sb(`people?account_id=eq.${acc.id}&select=*&order=created_at.asc`) || [];
+    currentPeople = await sb(`people?account_id=eq.${acc.id}&select=*`) || [];
     zoomLevel=1;
     document.getElementById('loading-screen').classList.add('hidden');
     showScreen('s-chart');
@@ -612,7 +615,7 @@ async function deleteAccount() {
   }
   if(!confirm('Delete this account and all its data?'))return;
   try {
-    await sb(`accounts?id=eq.${currentAccount.id}`, {method:'DELETE', prefer:'return=minimal'});
+    await sb(`accounts?id=eq.${currentAccount.id}`, {method:'DELETE'});
     closeModal('modal-edit-account');
     showToast('Deleted');
     goHub();
@@ -771,7 +774,7 @@ function makeCard(person) {
     if(isDescendant(tgt.id,src.id)){showToast("Can't move to a subordinate");return;}
     const newParent=dragZone==='below'?tgt.id:(tgt.parent_id||'');
     try {
-      await sb(`people?id=eq.${src.id}`,{method:'PATCH',body:{parent_id:newParent||null}});
+      await sb('people?id=eq.' + src.id, {method:'PATCH', body:{parent_id: newParent||null}});
       src.parent_id=newParent||null;
       renderTree();clearDragStyles();showToast('Reorganized ✓');
     } catch(e){showToast('Error saving');}
@@ -857,7 +860,7 @@ async function deletePerson() {
   if(!confirm('Remove this person?'))return;
   try {
     const person=currentPeople.find(p=>p.id===editingPersonId);
-    await sb(`people?id=eq.${editingPersonId}`,{method:'DELETE',prefer:'return=minimal'});
+    await sb(`people?id=eq.${editingPersonId}`,{method:'DELETE'});
     currentPeople.forEach(p=>{if(p.parent_id===editingPersonId)p.parent_id=person?.parent_id||null;});
     currentPeople=currentPeople.filter(p=>p.id!==editingPersonId);
     renderChart();closeModal('modal-person');showToast('Removed');
@@ -876,7 +879,7 @@ async function doImport() {
     }
     if(imp.people&&Array.isArray(imp.people)) {
       // delete existing people first
-      await sb(`people?account_id=eq.${currentAccount.id}`,{method:'DELETE',prefer:'return=minimal'});
+      await sb(`people?account_id=eq.${currentAccount.id}`,{method:'DELETE'});
       const toInsert=imp.people.map(p=>({
         id:p.id||uid(),
         account_id:currentAccount.id,
